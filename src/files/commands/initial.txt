@@ -1,0 +1,11 @@
+drop database lab1;
+create database lab1;
+use lab1;
+create table merchant(id int primary key auto_increment,name varchar(32),address varchar(128),phone_number int,main_dish varchar(32));
+create table user(id int primary key auto_increment,name varchar(32),gender varchar(32),student_id int);
+create table dish(sid int,id int auto_increment,name varchar(32),price int,picture varchar(128),sort varchar(32),nutrition varchar(128),allergen varchar(128),primary key (id,sid))
+create table order(id int primary key auto_increment,time datetime,uid int,sid int)
+create table order_dish(bid int,fid int,number int,primary key (bid,fid))
+create table like_merchant(uid int,sid int,primary key (uid,sid))
+create table like_dish(uid int,fid int,primary key (uid,fid))
+create table message(id int auto_increment,uid int,read TINYINT(1),time datetime,context varchar(256))
