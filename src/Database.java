@@ -37,10 +37,10 @@ public class Database {
             String[] argv = line.split(" ");
             addData("dish",argv);
         }
-        reader = new BufferedReader(new FileReader(new File("src/files/data/order_initial_data.txt")));
+        reader = new BufferedReader(new FileReader(new File("src/files/data/orders_initial_data.txt")));
         while ((line = reader.readLine())!=null){
             String[] argv = line.split(" ");
-            addData("order",argv);
+            addData("orders",argv);
         }
         reader = new BufferedReader(new FileReader(new File("src/files/data/order_dish_initial_data.txt")));
         while ((line = reader.readLine())!=null){
@@ -84,9 +84,9 @@ public class Database {
                 sqlStatement = "DELETE FROM dish WHERE id = ?";
                 argc = 1;
             }
-            case "order" -> {
-                schema = Constant.orderSchema;
-                sqlStatement = "DELETE FROM order WHERE id = ?";
+            case "orders" -> {
+                schema = Constant.ordersSchema;
+                sqlStatement = "DELETE FROM orders WHERE id = ?";
                 argc = 1;
             }
             case "order_dish" -> {
@@ -146,8 +146,8 @@ public class Database {
                 sqlStatement = "WHERE id = ?";
                 argc = 1;
             }
-            case "order" -> {
-                schema = Constant.orderSchema;
+            case "orders" -> {
+                schema = Constant.ordersSchema;
                 sqlStatement = "WHERE id = ?";
                 argc = 1;
             }
@@ -199,7 +199,7 @@ public class Database {
             case "merchant" -> schema = Constant.merchantSchema;
             case "user" -> schema = Constant.userSchema;
             case "dish" -> schema = Constant.dishSchema;
-            case "order" -> schema = Constant.orderSchema;
+            case "orders" -> schema = Constant.ordersSchema;
             case "order_dish" -> schema = Constant.order_dishSchema;
             case "like_merchant" -> schema = Constant.like_merchantSchema;
             case "like_dish" -> schema = Constant.like_dishSchema;
@@ -246,42 +246,42 @@ public class Database {
             case "merchant" -> {
                 schema = Constant.merchantSchema;
                 sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish) VALUES (?,?,?,?)";
-                argc = 4;
+                argc = schema.size() - 1;
             }
             case "user" -> {
                 schema = Constant.userSchema;
                 sqlStatement = "INSERT INTO user(name,gender,student_id) VALUES (?,?,?)";
-                argc = 3;
+                argc = schema.size() - 1;
             }
             case "dish" -> {
                 schema = Constant.dishSchema;
-                sqlStatement = "INSERT INTO dish(sid,name,price,picture,sort,nutrition,allergen) VALUES (?,?,?,?,?,?,?)";
-                argc = 7;
+                sqlStatement = "INSERT INTO dish(sid,name,price,picture,sort,nutrition,allergen,score,total_score,score_count) VALUES (?,?,?,?,?,?,?,?,?,?)";
+                argc = schema.size() - 1;
             }
-            case "order" -> {
-                schema = Constant.orderSchema;
-                sqlStatement = "INSERT INTO order(time,uid,sid) VALUES (?,?,?)";
-                argc = 3;
+            case "orders" -> {
+                schema = Constant.ordersSchema;
+                sqlStatement = "INSERT INTO orders(date,time,uid,sid,score,comment) VALUES (?,?,?,?,?,?)";
+                argc = schema.size() - 1;
             }
             case "order_dish" -> {
                 schema = Constant.order_dishSchema;
                 sqlStatement = "INSERT INTO order_dish(bid,fid,number) VALUES (?,?,?)";
-                argc = 3;
+                argc = schema.size();
             }
             case "like_merchant" -> {
                 schema = Constant.like_merchantSchema;
                 sqlStatement = "INSERT INTO like_merchant(uid,sid) VALUES (?,?)";
-                argc = 2;
+                argc = schema.size();
             }
             case "like_dish" -> {
                 schema = Constant.like_dishSchema;
                 sqlStatement = "INSERT INTO like_dish(uid,fid) VALUES (?,?)";
-                argc = 2;
+                argc = schema.size();
             }
             case "message" -> {
                 schema = Constant.messageSchema;
-                sqlStatement = "INSERT INTO message(uid,read,time,context) VALUES (?,?,?,?)";
-                argc = 4;
+                sqlStatement = "INSERT INTO message(uid,is_read,date,time,text) VALUES (?,?,?,?,?)";
+                argc = schema.size() - 1;
             }
             default -> {
                 if (debug) System.err.println("Add data err! Table: '" + table + "' do not exist!");
@@ -300,5 +300,124 @@ public class Database {
         if(statement.executeUpdate() >= 1) return true;
         else return false;
     }
-
+    public ArrayList<String[]> getUserInformation(int id) throws SQLException {
+        String line = "SELECT * FROM user WHERE id = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,id);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = Constant.userSchema.toArray(new String[0]);
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> userSearchForMerchant(String information) throws SQLException {//用信息检索商家，返回简略信息
+        String line = "SELECT id,name,main_dish FROM merchant WHERE name LIKE ?";
+        String str = "%"+ information +"%";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,str);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"id","name","main_dish"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showDetailedInformationOfMerchant(int id) throws SQLException {
+        String line = "SELECT id,name,address,phone_number,main_dish FROM merchant WHERE id = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        String[] result= new String[Constant.merchantSchema.size() + 1];
+        for (int i = 0; i < Constant.merchantSchema.size(); i++) {
+            result[i] = resultSet.getString(Constant.merchantSchema.get(i));
+        }
+        result[Constant.merchantSchema.size()] = Float.toString(getMerchantScore(id));
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(result);
+        return list;
+    }
+    public ArrayList<String[]> showDetailedInformationOfDish(int id) throws SQLException {
+        String line = "SELECT id,sid,name,price,picture,sort,nutrition,allergen,score,total_score,score_count FROM dish WHERE id = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,id);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = Constant.dishSchema.toArray(new String[0]);
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> userSearchForDishInMerchant(int sid,String information) throws SQLException {
+        String line = "SELECT id,name,price,picture,sort FROM dish WHERE name LIKE ? AND sid = ? ORDER BY sort";
+        String str = "%"+ information +"%";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,str);
+        statement.setInt(2,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"id","name","price","picture","sort"};
+        return resultSetToList(resultSet,schema);
+    }
+    public boolean userLikeDish(int uid,int fid) throws SQLException {
+        String[] argv = {Integer.toString(uid),Integer.toString(fid)};
+        return addData("like_dish",argv);
+    }
+    public boolean userLikeMerchant(int uid,int sid) throws SQLException {
+        String[] argv = {Integer.toString(uid),Integer.toString(sid)};
+        return addData("like_merchant",argv);
+    }
+    public ArrayList<String[]> userShowLikeDish(int uid) throws SQLException {
+        String line = "SELECT id,name,price,picture,sort FROM like_dish JOIN dish ON dish.id = like_dish.fid WHERE like_dish.uid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,uid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"id","name","price","picture","sort"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> userShowLikeMerchant(int uid) throws SQLException {
+        String line = "SELECT id,name,main_dish FROM like_merchant JOIN merchant ON like_merchant.sid = merchant.id WHERE like_merchant.uid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,uid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"id","name","main_dish"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> userShowMessageUnread(int uid) throws SQLException {
+        String line = "SELECT date,time,text FROM message WHERE uid = ? AND is_read = 0";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,uid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"date","time","text"};
+        return resultSetToList(resultSet,schema);
+    }
+//    public boolean userOrderDish(int id,int[] fid,int[] num){
+//        //TODO
+//    }
+    public ArrayList<String[]> showDishOfMerchant(int sid) throws SQLException {
+        String line = "SELECT id,name,price,picture,sort FROM dish WHERE sid = ? ORDER BY sort";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"id","name","price","picture","sort"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showSortOfMerchant(int sid) throws SQLException {
+        String line = "SELECT sort FROM dish WHERE sid = ? GROUP BY sort";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"sort"};
+        return resultSetToList(resultSet,schema);
+    }
+    private ArrayList<String[]> resultSetToList(ResultSet resultSet,String[] schema) throws SQLException {
+        ArrayList<String[]> resultList = new ArrayList<>();
+        while (resultSet.next()){
+            String[] row = new String[schema.length];
+            for (int i = 0; i < schema.length; i++) {
+                row[i] = resultSet.getString(schema[i]);
+            }
+            resultList.add(row);
+        }
+        return resultList;
+    }
+    private float getMerchantScore(int id) throws SQLException {
+        String line = "SELECT AVG(dish.score) as score FROM dish JOIN merchant ON dish.sid = merchant.id WHERE merchant.id = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        return resultSet.getFloat("score");
+    }
 }
