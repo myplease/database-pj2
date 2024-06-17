@@ -250,7 +250,7 @@ public class Database {
             }
             case "user" -> {
                 schema = Constant.userSchema;
-                sqlStatement = "INSERT INTO user(name,gender,student_id) VALUES (?,?,?)";
+                sqlStatement = "INSERT INTO user(name,gender,student_id,password) VALUES (?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "dish" -> {
@@ -260,12 +260,12 @@ public class Database {
             }
             case "orders" -> {
                 schema = Constant.ordersSchema;
-                sqlStatement = "INSERT INTO orders(date,time,uid,sid,score,comment) VALUES (?,?,?,?,?,?)";
+                sqlStatement = "INSERT INTO orders(date,time,uid,sid,comment) VALUES (?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "order_dish" -> {
                 schema = Constant.order_dishSchema;
-                sqlStatement = "INSERT INTO order_dish(bid,fid,number) VALUES (?,?,?)";
+                sqlStatement = "INSERT INTO order_dish(bid,fid,number,score) VALUES (?,?,?,?)";
                 argc = schema.size();
             }
             case "like_merchant" -> {
@@ -375,13 +375,28 @@ public class Database {
         return resultSetToList(resultSet,schema);
     }
     public ArrayList<String[]> userShowMessageUnread(int uid) throws SQLException {
-        String line = "SELECT date,time,text FROM message WHERE uid = ? AND is_read = 0";
+        String line = "SELECT id,date,time,text FROM message WHERE uid = ? AND is_read = 0";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,uid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"date","time","text"};
+        String[] schema = {"id","date","time","text"};
         return resultSetToList(resultSet,schema);
     }
+    public boolean userReadMessage(int mid) throws SQLException {
+        String[] argv = {Integer.toString(mid)};
+        return changeData("message",argv,"is_read","1");
+    }
+    public ArrayList<String[]> userShowOrder(int uid) throws SQLException {
+        String line = "SELECT bid,date,time,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,uid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"bid","date","time","name"};
+        return resultSetToList(resultSet,schema);
+    }
+//    public boolean userCommentOnOrder(int bid,String comment){
+//
+//    }
 //    public boolean userOrderDish(int id,int[] fid,int[] num){
 //        //TODO
 //    }
