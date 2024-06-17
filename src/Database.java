@@ -3,6 +3,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 public class Database {
     Connection connection;
     boolean debug = true;
@@ -91,17 +96,17 @@ public class Database {
             }
             case "order_dish" -> {
                 schema = Constant.order_dishSchema;
-                sqlStatement = "DELETE FROM order_dish WHERE bid = ?,fid = ?";
+                sqlStatement = "DELETE FROM order_dish WHERE bid = ? AND fid = ?";
                 argc = 2;
             }
             case "like_merchant" -> {
                 schema = Constant.like_merchantSchema;
-                sqlStatement = "DELETE FROM like_merchant WHERE uid = ?,sid = ?";
+                sqlStatement = "DELETE FROM like_merchant WHERE uid = ? AND sid = ?";
                 argc = 2;
             }
             case "like_dish" -> {
                 schema = Constant.like_dishSchema;
-                sqlStatement = "DELETE FROM like_dish WHERE uid = ?,fid = ?";
+                sqlStatement = "DELETE FROM like_dish WHERE uid = ? AND fid = ?";
                 argc = 2;
             }
             case "message" -> {
@@ -153,17 +158,17 @@ public class Database {
             }
             case "order_dish" -> {
                 schema = Constant.order_dishSchema;
-                sqlStatement = "WHERE bid = ?,fid = ?";
+                sqlStatement = "WHERE bid = ? AND fid = ?";
                 argc = 2;
             }
             case "like_merchant" -> {
                 schema = Constant.like_merchantSchema;
-                sqlStatement = "WHERE uid = ?,sid = ?";
+                sqlStatement = "WHERE uid = ? AND sid = ?";
                 argc = 2;
             }
             case "like_dish" -> {
                 schema = Constant.like_dishSchema;
-                sqlStatement = "WHERE uid = ?,fid = ?";
+                sqlStatement = "WHERE uid = ? AND fid = ?";
                 argc = 2;
             }
             case "message" -> {
@@ -186,8 +191,8 @@ public class Database {
         }
         String line = "UPDATE " + table + " SET " + entry + " = ? " + sqlStatement;
         PreparedStatement statement = connection.prepareStatement(line);
-        statement.setString(0,value);
-        for (int i = 0; i < 1; i++) {
+        statement.setString(1,value);
+        for (int i = 0; i < argv.length; i++) {
             statement.setString(i+2,argv[i]);
         }
         if(statement.executeUpdate() >= 1) return true;
@@ -226,7 +231,7 @@ public class Database {
         }
         line += " FROM " + table + " WHERE " + entry + " = ?";
         PreparedStatement statement = connection.prepareStatement(line);
-        statement.setString(0,value);
+        statement.setString(1,value);
         ResultSet resultSet = statement.executeQuery();
         List<String[]> resultList = new ArrayList<>();
         while (resultSet.next()){
@@ -260,7 +265,7 @@ public class Database {
             }
             case "orders" -> {
                 schema = Constant.ordersSchema;
-                sqlStatement = "INSERT INTO orders(date,time,uid,sid,comment) VALUES (?,?,?,?,?)";
+                sqlStatement = "INSERT INTO orders(date,time,uid,sid,comment,state) VALUES (?,?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "order_dish" -> {
@@ -387,19 +392,38 @@ public class Database {
         return changeData("message",argv,"is_read","1");
     }
     public ArrayList<String[]> userShowOrder(int uid) throws SQLException {
-        String line = "SELECT bid,date,time,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
+        String line = "SELECT bid,date,time,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,uid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"bid","date","time","name"};
+        String[] schema = {"bid","date","time","state","name"};
         return resultSetToList(resultSet,schema);
     }
-//    public boolean userCommentOnOrder(int bid,String comment){
-//
-//    }
-//    public boolean userOrderDish(int id,int[] fid,int[] num){
-//        //TODO
-//    }
+    public boolean userCommentOnOrder(int bid,String comment) throws SQLException {
+        String[] argv = {Integer.toString(bid)};
+        return changeData("orders",argv,"comment",comment);
+    }
+    public boolean userPutScoreOnOrderDish(int bid,int fid,int score) throws SQLException {//score should be [1,5]
+        String[] argv = {Integer.toString(bid),Integer.toString(fid)};
+        return changeData("order_dish",argv,"score",Integer.toString(score));
+    }
+    public boolean userOrderDish(int uid,int sid,int[] fid,int[] num) throws SQLException {
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String[] orders_argv = {date,time,Integer.toString(uid),Integer.toString(sid),"no_text",Integer.toString(0)};
+        addData("orders",orders_argv);
+        String line = "SELECT max(id) as id FROM orders";
+        PreparedStatement statement = connection.prepareStatement(line);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"id"};
+        ArrayList<String[]>resultList = resultSetToList(resultSet,schema);
+        int id = Integer.parseInt(resultList.get(0)[0]);
+        for (int i = 0; i < fid.length; i++) {
+            String[] order_dish_argv = {Integer.toString(id),Integer.toString(fid[i]),Integer.toString(num[i]),Integer.toString(0)};
+            addData("order_dish",order_dish_argv);
+        }
+        return true;
+    }
     public ArrayList<String[]> showDishOfMerchant(int sid) throws SQLException {
         String line = "SELECT id,name,price,picture,sort FROM dish WHERE sid = ? ORDER BY sort";
         PreparedStatement statement = connection.prepareStatement(line);
