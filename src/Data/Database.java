@@ -305,6 +305,26 @@ public class Database {
         if(statement.executeUpdate() >= 1) return true;
         else return false;
     }
+    public boolean userRegister(String name,String gender,String student_id,String password) throws SQLException {
+        String[] argv = {name,gender,student_id,password};
+        return addData("user",argv);
+    }
+    public boolean merchantRegister(String name,String address,String phone_number,String main_dish) throws SQLException {
+        String[] argv = {name,address,phone_number,main_dish};
+        return addData("merchant",argv);
+    }
+    public boolean merchantAddDish(int sid,String name,String price,String picture,String sort,String nutrition,String allergen) throws SQLException {
+        String[] argv = {Integer.toString(sid),name,price,picture,sort,nutrition,allergen,Integer.toString(0),Integer.toString(0),Integer.toString(0)};
+        return addData("dish",argv);
+    }
+    public boolean merchantChangePrice(int fid,int price) throws SQLException {
+        String[] argv = {Integer.toString(fid)};
+        return changeData("dish",argv,"price",Integer.toString(price));
+    }
+    public boolean merchantOrderReady(int bid) throws SQLException {
+        String[] argv = {Integer.toString(bid)};
+        return changeData("order",argv,"state",Integer.toString(1));
+    }
     public ArrayList<String[]> getUserInformation(int id) throws SQLException {
         String line = "SELECT * FROM user WHERE id = ?";
         PreparedStatement statement = connection.prepareStatement(line);
@@ -459,4 +479,6 @@ public class Database {
         resultSet.next();
         return resultSet.getFloat("score");
     }
+    //TODO 用户确认菜已经收到
+
 }
