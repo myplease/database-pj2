@@ -1,0 +1,6 @@
+1 dish_name0 10 picture0 sort0 nutrition allergen 0 0 0
+1 dish_name1 10 picture0 sort1 nutrition allergen 0 0 0
+1 dish_name2 10 picture0 sort0 nutrition allergen 0 0 0
+1 dish_name3 10 picture0 sort2 nutrition allergen 0 0 0
+1 dish_name4 10 picture0 sort1 nutrition allergen 0 0 0
+1 dish_name5 10 picture0 sort0 nutrition allergen 0 0 0
