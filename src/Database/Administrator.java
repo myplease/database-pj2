@@ -3,9 +3,13 @@ package Database;
 import java.util.Scanner;
 import static java.lang.Integer.parseInt;
 
+import Data.Database;
+
 public class Administrator {
-    private User user = new User();
-    private Merchant merchant = new Merchant();
+    private Database db;
+    public Administrator(Database db){
+        this.db = db;
+    }
 
     public void run(){
         Scanner sc = new Scanner(System.in);
@@ -48,14 +52,13 @@ public class Administrator {
             switch (option) {
                 case "ID" -> {
                     String id = sc.nextLine();
-                    user.setId(parseInt(id));
                 }
                 case "EXIT" -> {
                     //数据库操作，更新数据
 
                     return;
                 }
-                case "UserInformation" -> user.modify();
+                case "UserInformation" -> {}
                 default -> System.out.println("Input error!");
             }
         }
@@ -70,15 +73,14 @@ public class Administrator {
             switch (option) {
                 case "ID" -> {
                     String id = sc.nextLine();
-                    merchant.setId(parseInt(id));
                 }
                 case "EXIT" -> {
                     //数据库操作，更新数据
 
                     return;
                 }
-                case "MerchantInformation" -> merchant.changeInformation();
-                case "MerchantMenu" -> merchant.changeMeal();
+                case "MerchantInformation" -> {}
+                case "MerchantMenu" -> {}
                 default -> System.out.println("Input error!");
             }
         }

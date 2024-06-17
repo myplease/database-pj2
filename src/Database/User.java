@@ -1,61 +1,18 @@
 package Database;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
+import Data.Database;
+
 public class User {
-    private int id;
-    private String name;
-    private String gender;
-    private String studentID;
-    private Merchant nowMerchant;
-    private double balance;
-    private double pay;
-    private List<Dish> order = new ArrayList<>();
-    private List<Dish> collectionDish = new ArrayList<>();
-    private List<Merchant> collectionMerchant = new ArrayList<>();
+    private int u_id;
+    private int m_id;
 
-    public void setId(int id) {
-        this.id = id;
-    }
-    public int getId(){
-        return id;
-    }
-
-    public void setName(String name){
-        this.name = name;
-    }
-    public String getName(){
-        return this.name;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-    public String getGender() {
-        return this.gender;
-    }
-
-    public void setStudentID(String studentID){
-        this.studentID = studentID;
-    }
-    public String getStudentID(){
-        return this.studentID;
-    }
-
-    public void setBalance(double balance){
-        this.balance = balance;
-    }
-    public double getBalance(){
-        return this.balance;
-    }
-
-    public void setPay(double pay){
-        this.pay = pay;
-    }
-    public double getPay(){
-        return this.pay;
+    private Database db;
+    public User(Database db){
+        this.db = db;
     }
 
     public void run(){
@@ -112,6 +69,7 @@ public class User {
             case "1":
                 //数据库操作，把用户信息传出来。
                 //登录操作
+
                 break;
             case "2":
                 //数据库操作，把用户信息存入。
@@ -123,52 +81,95 @@ public class User {
     }
 
     public void view(){
-        System.out.println("ID: " + this.id);
-        System.out.println("Name: " + this.name);
-        System.out.println("Gender: " + this.gender);
-        System.out.println("StudentID: " + this.studentID);
-        System.out.println("Balance: " + this.balance);
+        try {
+            ArrayList<String[]> temp = db.getUserInformation(u_id);
+            System.out.println("id\tname\tgender\tstudent_id");
+            for (String[] strings : temp) {
+                dealMethod.printStr(strings);
+            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred!");
+        }
     }
 
     public void modify(){
         System.out.println("Please choose the attribute to modify.");
         System.out.println("name, gender or studentID (Enter exit to exit)");
         Scanner sc = new Scanner(System.in);
-        while(true){
-            String attribute = sc.nextLine();
-            switch(attribute){
-                case "name":
-                    System.out.println("Please enter the new name.");
-                    String name = sc.nextLine();
-                    setName(name);
+        try {
+            while(true){
+                int flag = 0;
+                String attribute = sc.nextLine();
+                switch(attribute){
+                    case "name":
+                        flag = 1;
+                        System.out.println("Please enter the new name.");
+                        String name = sc.nextLine();
+                        db.changeData("user", new String[]{Integer.toString(u_id)}, "name", name);
+                        break;
+                    case "gender":
+                        flag = 1;
+                        System.out.println("Please enter the new gender.");
+                        String gender = sc.nextLine();
+                        db.changeData("user", new String[]{Integer.toString(u_id)}, "gender", gender);
+                        break;
+                    case "studentID":
+                        flag = 1;
+                        System.out.println("Please enter the new studentID.");
+                        String studentID = sc.nextLine();
+                        db.changeData("user", new String[]{Integer.toString(u_id)}, "student_id", studentID);
+                        break;
+                    case "exit":
+                        return;
+                    default:
+                        System.out.println("Input error! Please enter again.");
+                        break;
+                }
+                if(flag == 1){
                     break;
-                case "gender":
-                    System.out.println("Please enter the new gender.");
-                    String gender = sc.nextLine();
-                    setGender(gender);
-                    break;
-                case "studentID":
-                    System.out.println("Please enter the new studentID.");
-                    String studentID = sc.nextLine();
-                    setStudentID(studentID);
-                    break;
-                case "exit":
-                    return;
-                default:
-                    System.out.println("Input error! Please enter again.");
-                    break;
+                }
             }
-            //数据库操作，更改数据库的内容。
+        } catch (SQLException e) {
+            System.out.println("An error occurred!");
         }
     }
 
     public void search(){
         System.out.println("Please enter the name or id of the merchant.");
         Scanner sc = new Scanner(System.in);
-        //数据库操作，把信息输出，如果有多个同名商户就继续操作，让用户选择一个进入。
-        //然后把信息存储到nowMerchant中。
-        //如果用户不选择的话就直接return。
-        //并且简单展示信息。
+        String search = sc.nextLine();
+        try {
+            ArrayList<String[]> temp = db.userSearchForMerchant(search);
+            System.out.println("id\tname\tmain_dish");
+            for(String[] strings : temp){
+                dealMethod.printStr(strings);
+            }
+            if(temp.size() >= 2){
+                System.out.println("Please choose a merchant.(Input id)");
+                String[] idTemp = dealMethod.getID(temp);
+                while(true){
+                    int flag = 0;
+                    String idInput = sc.nextLine();
+                    for(String str : idTemp){
+                        if(str.equals(idInput)){
+                            flag = 1;
+                            m_id = Integer.parseInt(str);
+                            break;
+                        }
+                    }
+                    if(flag == 1){
+                        System.out.println("You have entered the merchant.");
+                        break;
+                    }
+                    else{
+                        System.out.println("Input error! Please enter again.");
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("An error occurred!");
+        }
 
         System.out.println("Please enter your operate.(Enter Help to get all operation)");
         while(true){
@@ -176,17 +177,21 @@ public class User {
             switch(operate){
                 case "Help":
                     System.out.println("Show: show the merchant information.");
-                    System.out.println("Collection: collect a merchant or a dish.");
-                    System.out.println("searchMeal: search the meal.");
+                    System.out.println("Deals: show the dishes.");
+                    System.out.println("Sort: show the sorts.");
+                    System.out.println("Choose: choose the meal.");
                     System.out.println("Exit: exit the merchant.");
                 case "Show":
                     show();
                     break;
-                case "Collection":
-                    collectMerchant(nowMerchant);
+                case "Deals":
+                    printDeals();
                     break;
-                case "searchMeal":
-                    searchMeal();
+                case "Sort":
+                    printSort();
+                    break;
+                case "Choose":
+                    chooseMeal();
                     break;
                 case "Exit":
                     return;
@@ -198,57 +203,53 @@ public class User {
     }
 
     public void order(){
-        for (Dish item : order) {
-            System.out.println("The dish name: " + item.getName());
-            double aggregatePrice = item.getPrice() * item.getNumber();
-            System.out.println("The dish price: " + aggregatePrice);
-        }
     }
 
     public void check(){
-        if(getBalance() < getPay()){
-            System.out.println("Insufficient balance! Cant check!");
-        }
-        else{
-            setBalance(getBalance() - getPay());
-            //数据库操作，更改用户信息。
-        }
     }
 
     public void show(){
-        //展示商户信息。
-    }
-
-    public void collectMerchant(Merchant merchant){
-        collectionMerchant.add(merchant);
-    }
-
-    public void searchMeal(){
-        System.out.println("Please enter the name or id of the meal.");
-        //数据库操作，找到这个meal并且返回。
-        Dish meal = null;//把这个meal的属性都更改
-        //展示信息。
-
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Please enter your operate. Add or Collect the meal.");
-        while(true){
-            int flag = 0;
-            String operate = sc.nextLine();
-            switch(operate){
-                case "Add":
-                    order.add(meal);
-                    break;
-                case "Collect":
-                    collectionDish.add(meal);
-                    break;
-                default:
-                    flag = 1;
-                    System.out.println("Input error! Please enter again.");
-                    break;
+        try {
+            ArrayList<String[]> informationMer = db.showDetailedInformationOfMerchant(m_id);
+            System.out.println("id\tname\taddress\tphone_number\tmain_dish");
+            for(String[] strings : informationMer) {
+                dealMethod.printStr(strings);
             }
-            if(flag == 0){
-                break;
-            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred!");
         }
+    }
+
+    public void printDeals(){
+        try {
+            ArrayList<String[]> dealTemp = db.showDishOfMerchant(m_id);
+            String[] idsDealTemp = dealMethod.getID(dealTemp);
+            System.out.println("id\tsid\tname\tprice\tpicture\tsort\tnutrition\tallergen" +
+                    "\tscore\ttotal_score\tscore_count");
+            for(String idDeal : idsDealTemp) {
+                ArrayList<String[]> dealDetails = db.showDetailedInformationOfDish(Integer.parseInt(idDeal));
+                dealMethod.printStr(dealDetails.get(0));
+            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred!");
+        }
+    }
+
+    public void printSort(){
+        try {
+            ArrayList<String[]> sortTemp = db.showSortOfMerchant(m_id);
+            System.out.println("sort");
+            for(String[] strings : sortTemp) {
+                dealMethod.printStr(strings);
+            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred!");
+        }
+    }
+
+    public void chooseMeal(){
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Please enter the name or id of the meal.");
+
     }
 }
