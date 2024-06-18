@@ -4,7 +4,7 @@ use database_PJ;
 create table merchant(id int primary key auto_increment,name varchar(32),address varchar(128),phone_number varchar(32) key,main_dish varchar(32));
 create table user(id int primary key auto_increment,name varchar(32),gender varchar(32),student_id varchar(32) key,password varchar(32));
 create table dish(sid int,id int auto_increment,name varchar(32),price int,picture varchar(128),sort varchar(32),nutrition varchar(128),allergen varchar(128),score int,total_score int,score_count int,primary key (id,sid));
-create table orders(id int primary key auto_increment,date date,time time,uid int,sid int,comment varchar(256),state int);
+create table orders(id int primary key auto_increment,date date,time time,uid int,sid int,is_online TINYINT(1),comment varchar(256),state int);
 create table order_dish(bid int,fid int,number int,score int,primary key (bid,fid));
 create table like_merchant(uid int,sid int,primary key (uid,sid));
 create table like_dish(uid int,fid int,primary key (uid,fid));

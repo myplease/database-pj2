@@ -265,7 +265,7 @@ public class Database {
             }
             case "orders" -> {
                 schema = Constant.ordersSchema;
-                sqlStatement = "INSERT INTO orders(date,time,uid,sid,comment,state) VALUES (?,?,?,?,?,?)";
+                sqlStatement = "INSERT INTO orders(date,time,uid,sid,is_online,comment,state) VALUES (?,?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "order_dish" -> {
@@ -428,7 +428,7 @@ public class Database {
         return changeData("message",argv,"is_read","1");
     }
     public ArrayList<String[]> userShowOrder(int uid) throws SQLException {
-        String line = "SELECT bid,date,time,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
+        String line = "SELECT bid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,uid);
         ResultSet resultSet = statement.executeQuery();
@@ -443,10 +443,10 @@ public class Database {
         String[] argv = {Integer.toString(bid),Integer.toString(fid)};
         return changeData("order_dish",argv,"score",Integer.toString(score));
     }
-    public boolean userOrderDish(int uid,int sid,int[] fid,int[] num) throws SQLException {
+    public boolean userOrderDish(int uid,int sid,int[] fid,int[] num,boolean is_online) throws SQLException {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        String[] orders_argv = {date,time,Integer.toString(uid),Integer.toString(sid),"no_text",Integer.toString(0)};
+        String[] orders_argv = {date,time,Integer.toString(uid),Integer.toString(sid),Boolean.toString(is_online),"no_text",Integer.toString(0)};
         addData("orders",orders_argv);
         String line = "SELECT max(id) as id FROM orders";
         PreparedStatement statement = connection.prepareStatement(line);
