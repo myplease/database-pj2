@@ -3,12 +3,32 @@ package Database;
 import java.util.ArrayList;
 
 public class dealMethod {
-    public static void printStr(String[] list){
+    public static void printStr(String[] list, String[] vis){
+        int cmp = 0;
         for (String s : list) {
-            System.out.println(s);
-            System.out.println("\t");
+            switch(vis[cmp]){
+                case "id" -> System.out.printf("%-5s", s);
+                case "name" -> System.out.printf("%-20s", s);
+                case "address" -> System.out.printf("%-20s", s);
+                case "phone_number" -> System.out.printf("%-15s", s);
+                case "main_dish" -> System.out.printf("%-10s", s);
+                case "sid" -> System.out.printf("%-5s", s);
+                case "price" -> System.out.printf("%-10s", s);
+                case "picture" -> System.out.printf("%-10s", s);
+                case "sort" -> System.out.printf("%-10s", s);
+                case "nutrition" -> System.out.printf("%-10s", s);
+                case "allergen" -> System.out.printf("%-10s", s);
+                case "score" -> System.out.printf("%-10s", s);
+                case "total_score" -> System.out.printf("%-20s", s);
+                case "score_count" -> System.out.printf("%-20s", s);
+                case "gender" -> System.out.printf("%-5s", s);
+                case "student_id" -> System.out.printf("%-20s", s);
+                default -> System.out.printf("%-5s", s);
+            }
+            cmp++;
+            if(cmp == vis.length) cmp = 0;
         }
-        System.out.println("\n");
+        System.out.println();
     }
 
     public static String[] getID(ArrayList<String[]> list){

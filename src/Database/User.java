@@ -8,7 +8,7 @@ import Data.Database;
 
 public class User {
     private int u_id;
-    private int m_id;
+    private int s_id;
 
     private Database db;
     public User(Database db){
@@ -22,7 +22,7 @@ public class User {
         switch(choose){
             case "1":
             case "2":
-                System.out.println("Please enter your username: ");
+                System.out.println("Please enter your student_id: ");
                 String username = sc.nextLine();
                 System.out.println("Please enter your password: ");
                 String password = sc.nextLine();
@@ -65,6 +65,7 @@ public class User {
     }
 
     public void LoginOrRegister(String operate, String username, String password){
+        Scanner sc = new Scanner(System.in);
         switch(operate){
             case "1":
                 //数据库操作，把用户信息传出来。
@@ -74,6 +75,18 @@ public class User {
             case "2":
                 //数据库操作，把用户信息存入。
                 //注册操作
+                System.out.println("Please enter your name: ");
+                String name = sc.nextLine();
+                System.out.println("Please enter your gender: ");
+                String gender = sc.nextLine();
+                try{
+                    db.userRegister(name, gender, username, password);
+                }
+                catch(SQLException e){
+                    System.out.println("An error occurred.");
+                }
+                //更改u_id
+
                 break;
             default:
                 break;
@@ -83,9 +96,10 @@ public class User {
     public void view(){
         try {
             ArrayList<String[]> temp = db.getUserInformation(u_id);
-            System.out.println("id\tname\tgender\tstudent_id");
+            System.out.printf("%-5s%-20s%-5s%-20s%n","id", "name", "gender", "student_id");
+            String[] VIS = {"id", "name", "gender", "student_id"};
             for (String[] strings : temp) {
-                dealMethod.printStr(strings);
+                dealMethod.printStr(strings, VIS);
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
@@ -140,9 +154,10 @@ public class User {
         String search = sc.nextLine();
         try {
             ArrayList<String[]> temp = db.userSearchForMerchant(search);
-            System.out.println("id\tname\tmain_dish");
+            System.out.printf("%-5s%-20s%-10s%n", "id", "name", "main_dish");
+            String[] VIS = {"id", "name", "main_dish"};
             for(String[] strings : temp){
-                dealMethod.printStr(strings);
+                dealMethod.printStr(strings, VIS);
             }
             if(temp.size() >= 2){
                 System.out.println("Please choose a merchant.(Input id)");
@@ -153,7 +168,7 @@ public class User {
                     for(String str : idTemp){
                         if(str.equals(idInput)){
                             flag = 1;
-                            m_id = Integer.parseInt(str);
+                            s_id = Integer.parseInt(str);
                             break;
                         }
                     }
@@ -210,10 +225,11 @@ public class User {
 
     public void show(){
         try {
-            ArrayList<String[]> informationMer = db.showDetailedInformationOfMerchant(m_id);
-            System.out.println("id\tname\taddress\tphone_number\tmain_dish");
+            ArrayList<String[]> informationMer = db.showDetailedInformationOfMerchant(s_id);
+            System.out.printf("%-5s%-20s%-20s%-20s%-10s%n","id", "name", "address", "phone_number", "main_dish");
+            String[] VIS = {"id", "name", "address", "phone_number", "main_dish"};
             for(String[] strings : informationMer) {
-                dealMethod.printStr(strings);
+                dealMethod.printStr(strings, VIS);
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
@@ -222,13 +238,15 @@ public class User {
 
     public void printDeals(){
         try {
-            ArrayList<String[]> dealTemp = db.showDishOfMerchant(m_id);
+            ArrayList<String[]> dealTemp = db.showDishOfMerchant(s_id);
             String[] idsDealTemp = dealMethod.getID(dealTemp);
-            System.out.println("id\tsid\tname\tprice\tpicture\tsort\tnutrition\tallergen" +
-                    "\tscore\ttotal_score\tscore_count");
+            System.out.printf("%-5s%-5s%-20s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
+                    "nutrition", "allergen", "score", "total_score", "score_count");
+            String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
+                    "score", "total_score", "score_count"};
             for(String idDeal : idsDealTemp) {
                 ArrayList<String[]> dealDetails = db.showDetailedInformationOfDish(Integer.parseInt(idDeal));
-                dealMethod.printStr(dealDetails.get(0));
+                dealMethod.printStr(dealDetails.getFirst(), VisD);
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
@@ -237,10 +255,10 @@ public class User {
 
     public void printSort(){
         try {
-            ArrayList<String[]> sortTemp = db.showSortOfMerchant(m_id);
-            System.out.println("sort");
+            ArrayList<String[]> sortTemp = db.showSortOfMerchant(s_id);
+            System.out.printf("%-10s","sort");
             for(String[] strings : sortTemp) {
-                dealMethod.printStr(strings);
+                dealMethod.printStr(strings, new String[]{"sort"});
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");

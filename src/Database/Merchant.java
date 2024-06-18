@@ -7,7 +7,7 @@ import java.util.Scanner;
 import Data.Database;
 
 public class Merchant {
-    private int m_id;
+    private int s_id;
     private Database db;
     public Merchant(Database db){
         this.db = db;
@@ -20,7 +20,7 @@ public class Merchant {
         switch(choose){
             case "1":
             case "2":
-                System.out.println("Please enter your username: ");
+                System.out.println("Please enter your phone: ");
                 String username = sc.nextLine();
                 System.out.println("Please enter your password: ");
                 String password = sc.nextLine();
@@ -29,17 +29,21 @@ public class Merchant {
             default:
                 break;
         }
+        //TEST
+            s_id = 1;
+        //end
         while(true){
             System.out.println("Please enter your operation.(Enter Help to get all operation)");
             String operation = sc.nextLine();
             switch(operation){
-                case "help":
+                case "Help":
                     System.out.println("Show: show your information.");
                     System.out.println("ChangeInformation: change your account.");
                     System.out.println("Home: return to the main interface.");
                     System.out.println("ChangeMeal: change the meal.");
                     System.out.println("AddMeal: add your meal.");
                     System.out.println("Meal: show your meals.");
+                    break;
                 case "Show":
                     showInf();
                     break;
@@ -51,8 +55,11 @@ public class Merchant {
                 case "ChangeMeal":
                     changeMeal();
                     break;
-                case "Meal":
+                case "AddMeal":
                     addMeal();
+                    break;
+                case "Meal":
+                    showMeal();
                     break;
                 default:
                     break;
@@ -61,14 +68,28 @@ public class Merchant {
     }
 
     public void showMeal(){
+        Scanner sc = new Scanner(System.in);
         try {
-            ArrayList<String[]> dealTemp = db.showDishOfMerchant(m_id);
-            String[] idsDealTemp = dealMethod.getID(dealTemp);
-            System.out.println("id\tsid\tname\tprice\tpicture\tsort\tnutrition\tallergen" +
-                    "\tscore\ttotal_score\tscore_count");
-            for(String idDeal : idsDealTemp) {
-                ArrayList<String[]> dealDetails = db.showDetailedInformationOfDish(Integer.parseInt(idDeal));
-                dealMethod.printStr(dealDetails.get(0));
+            ArrayList<String[]> dealTemp = db.showDishOfMerchant(s_id);
+            System.out.printf("%-5s%-20s%-10s%-10s%-10s%n", "id", "name", "price", "picture", "sort");
+            String[] VIS = {"id", "name", "price", "picture", "sort"};
+            for(String[] d : dealTemp){
+                dealMethod.printStr(d, VIS);
+            }
+            System.out.println("Please input the deal_id to choose one meal to check the detail.(Exit for exit)");
+            String command = sc.nextLine();
+            if(command.equals("Exit")){
+                return;
+            }
+            else{
+                String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
+                    "score", "total_score", "score_count"};
+                System.out.printf("%-5s%-5s%-20s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
+                        "nutrition", "allergen", "score", "total_score", "score_count");
+                ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(command));
+                for(String[] d : idsDealTemp){
+                    dealMethod.printStr(d, VisD);
+                }
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
@@ -92,10 +113,11 @@ public class Merchant {
 
     public void showInf(){
         try {
-            ArrayList<String[]> merchantInf = db.showDetailedInformationOfMerchant(m_id);
-            System.out.println("id\tname\taddress\tphone_number\tmain_dish");
+            ArrayList<String[]> merchantInf = db.showDetailedInformationOfMerchant(s_id);
+            System.out.printf("%-5s%-20s%-20s%-15s%-10s%n", "id", "name", "address", "phone_number", "main_dish");
+            String[] VIS = {"id", "name", "address", "phone_number", "main_dish"};
             for (String[] strings : merchantInf) {
-                dealMethod.printStr(strings);
+                dealMethod.printStr(strings, VIS);
             }
         }
         catch(Exception e){
@@ -109,33 +131,41 @@ public class Merchant {
         System.out.println("name, address, phone or mealMain (Enter exit to exit)");
         try {
             while(true){
+                int flag = 0;
                 String attribute = sc.nextLine();
                 switch(attribute){
                     case "name":
+                        flag = 1;
                         System.out.println("Please enter the new name.");
                         String name = sc.nextLine();
-                        db.changeData("merchant", new String[]{Integer.toString(m_id)}, "name", name);
+                        db.changeData("merchant", new String[]{Integer.toString(s_id)}, "name", name);
                         break;
                     case "address":
+                        flag = 1;
                         System.out.println("Please enter the new address.");
                         String address = sc.nextLine();
-                        db.changeData("merchant", new String[]{Integer.toString(m_id)}, "address", address);
+                        db.changeData("merchant", new String[]{Integer.toString(s_id)}, "address", address);
                         break;
                     case "phone":
+                        flag = 1;
                         System.out.println("Please enter the new phone.");
                         String phone = sc.nextLine();
-                        db.changeData("merchant", new String[]{Integer.toString(m_id)}, "phone_number", phone);
+                        db.changeData("merchant", new String[]{Integer.toString(s_id)}, "phone_number", phone);
                         break;
                     case "mealMain":
+                        flag = 1;
                         System.out.println("Please enter the new mealMain.");
                         String mealMain = sc.nextLine();
-                        db.changeData("merchant", new String[]{Integer.toString(m_id)}, "main_dish", mealMain);
+                        db.changeData("merchant", new String[]{Integer.toString(s_id)}, "main_dish", mealMain);
                         break;
                     case "exit":
                         return;
                     default:
                         System.out.println("Input error!");
                         break;
+                }
+                if(flag == 1){
+                    break;
                 }
             }
         }
@@ -149,8 +179,12 @@ public class Merchant {
         System.out.println("Please choose a meal.(Input a id)");
         String meal_id = sc.nextLine();
         try {
+            System.out.printf("%-5s%-5s%-20s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
+                    "nutrition", "allergen", "score", "total_score", "score_count");
+            String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
+                    "score", "total_score", "score_count"};
             ArrayList<String[]> mealInf = db.showDetailedInformationOfDish(Integer.parseInt(meal_id));
-            dealMethod.printStr(mealInf.get(0));
+            dealMethod.printStr(mealInf.getFirst(), VisD);
         }
         catch (SQLException e){
             System.out.println("An error occurred.");
@@ -208,6 +242,9 @@ public class Merchant {
     public void addMeal(){
         Scanner sc = new Scanner(System.in);
         ArrayList<String> tempMeal = new ArrayList<>();
+        //test
+        tempMeal.add("1");
+        //test
         System.out.println("Please input the attribute.");
         System.out.println("Please input the name.");
         String name = sc.nextLine();
@@ -227,6 +264,11 @@ public class Merchant {
         System.out.println("Please input the allergen");
         String allergen = sc.nextLine();
         tempMeal.add(allergen);
+        //test
+        tempMeal.add("2");
+        tempMeal.add("3");
+        tempMeal.add("4");
+        //
         try {
             db.addData("dish", tempMeal.toArray(new String[0]));
         }
