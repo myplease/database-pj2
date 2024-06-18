@@ -305,6 +305,22 @@ public class Database {
         if(statement.executeUpdate() >= 1) return true;
         else return false;
     }
+    public String getUserIdByStudent_id(String student_id) throws SQLException {
+        String line = "SELECT id FROM user WHERE student_id = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,student_id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        return resultSet.getString("id");
+    }
+    public String getMerchantIdByPhone_Number(String phone_number) throws SQLException {
+        String line = "SELECT id FROM merchant WHERE phone_number = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,phone_number);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        return resultSet.getString("id");
+    }
     public boolean userRegister(String name,String gender,String student_id,String password) throws SQLException {
         String[] argv = {name,gender,student_id,password};
         return addData("user",argv);
