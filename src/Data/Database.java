@@ -265,7 +265,7 @@ public class Database {
             }
             case "orders" -> {
                 schema = Constant.ordersSchema;
-                sqlStatement = "INSERT INTO orders(date,time,uid,sid,is_online,comment,state) VALUES (?,?,?,?,?,?)";
+                sqlStatement = "INSERT INTO orders(date,time,uid,sid,is_online,comment,state) VALUES (?,?,?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "order_dish" -> {
