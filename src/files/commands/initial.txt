@@ -1,10 +1,10 @@
 drop database database_PJ;
 create database database_PJ;
 use database_PJ;
-create table merchant(id int primary key auto_increment,name varchar(32),address varchar(128),phone_number varchar(32),main_dish varchar(32));
-create table user(id int primary key auto_increment,name varchar(32),gender varchar(32),student_id varchar(32),password varchar(32));
+create table merchant(id int primary key auto_increment,name varchar(32),address varchar(128),phone_number varchar(32),main_dish varchar(32),unique (phone_number));
+create table user(id int primary key auto_increment,name varchar(32),gender varchar(32),student_id varchar(32),password varchar(32),unique (student_id));
 create table dish(sid int,id int auto_increment,name varchar(32),price int,picture varchar(128),sort varchar(32),nutrition varchar(128),allergen varchar(128),score int,total_score int,score_count int,primary key (id,sid));
-create table orders(id int primary key auto_increment,date date,time time,uid int,sid int,comment varchar(256),state int);
+create table orders(id int primary key auto_increment,date date,time time,uid int,sid int,is_online TINYINT(1),comment varchar(256),state int);
 create table order_dish(bid int,fid int,number int,score int,primary key (bid,fid));
 create table like_merchant(uid int,sid int,primary key (uid,sid));
 create table like_dish(uid int,fid int,primary key (uid,fid));
@@ -12,3 +12,4 @@ create table message(id int primary key auto_increment,uid int,is_read TINYINT(1
 CREATE TRIGGER update_avg_score BEFORE UPDATE ON dish FOR EACH ROW BEGIN     IF NEW.score_count <> 0 THEN         SET NEW.score = NEW.total_score / NEW.score_count;     ELSE         SET NEW.score = 0;     END IF; END;
 CREATE TRIGGER update_total_score AFTER UPDATE ON order_dish FOR EACH ROW BEGIN     DECLARE old_score INT;     DECLARE new_score INT;     DECLARE dish_id INT;     SELECT OLD.score, NEW.score, fid INTO old_score, new_score, dish_id FROM order_dish WHERE bid = NEW.bid;     UPDATE dish SET total_score = total_score - old_score + new_score, score_count = CASE WHEN old_score = 0 THEN score_count + 1 ELSE score_count END WHERE id = dish_id; END;
 CREATE TRIGGER send_message_on_state_change AFTER UPDATE ON orders FOR EACH ROW BEGIN     IF OLD.state <> 1 AND NEW.state = 1 THEN         INSERT INTO message (uid, is_read, date, time, text)         VALUES (NEW.uid, 0, CURDATE(), CURTIME(), 'The dish is ready');     END IF; END;
+CREATE TRIGGER send_message_on_order_creation AFTER INSERT ON orders FOR EACH ROW BEGIN     INSERT INTO message (uid, is_read, date, time, text)     VALUES (NEW.uid, 0, CURDATE(), CURTIME(), 'text_1'); END;
