@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Constant {
-    public static List<String> merchantSchema = Arrays.asList("id","name","address","phone_number","main_dish");
+    public static List<String> merchantSchema = Arrays.asList("id","name","address","phone_number","main_dish","password");
     public static List<String> userSchema = Arrays.asList("id","name","gender","student_id","password");
     public static List<String> dishSchema = Arrays.asList("id","sid","name","price","picture","sort","nutrition","allergen","score","total_score","score_count");
     public static List<String> ordersSchema = Arrays.asList("id","date","time","uid","sid","is_online","comment","state");

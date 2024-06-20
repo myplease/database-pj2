@@ -250,7 +250,7 @@ public class Database {
         switch (table) {
             case "merchant" -> {
                 schema = Constant.merchantSchema;
-                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish) VALUES (?,?,?,?)";
+                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish,,password) VALUES (?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "user" -> {
@@ -348,6 +348,21 @@ public class Database {
         ResultSet resultSet = statement.executeQuery();
         String[] schema = Constant.userSchema.toArray(new String[0]);
         return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> getMerchantInformation(int id) throws SQLException {
+        String line = "SELECT * FROM merchant WHERE id = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        String[] result= new String[Constant.merchantSchema.size() + 1];
+        for (int i = 0; i < Constant.merchantSchema.size(); i++) {
+            result[i] = resultSet.getString(Constant.merchantSchema.get(i));
+        }
+        result[Constant.merchantSchema.size()] = Float.toString(getMerchantScore(id));
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(result);
+        return list;
     }
     public ArrayList<String[]> userSearchForMerchant(String information) throws SQLException {//用信息检索商家，返回简略信息
         String line = "SELECT id,name,main_dish FROM merchant WHERE name LIKE ?";
