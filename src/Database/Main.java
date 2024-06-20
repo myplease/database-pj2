@@ -15,8 +15,8 @@ public class Main {
             String operator = sc.nextLine();
             switch(operator){
                 case "1":
-//                    Administrator admin = new Administrator(db);
-//                    admin.run();
+                    Administrator admin = new Administrator(db);
+                    admin.run();
                     break;
                 case "2":
                     Merchant merchant = new Merchant(db);

@@ -8,6 +8,7 @@ import Data.Database;
 
 public class Merchant {
     private int s_id;
+
     private Database db;
     public Merchant(Database db){
         this.db = db;

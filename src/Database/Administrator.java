@@ -6,6 +6,9 @@ import static java.lang.Integer.parseInt;
 import Data.Database;
 
 public class Administrator {
+    int u_id;
+    int s_id;
+
     private Database db;
     public Administrator(Database db){
         this.db = db;
@@ -16,8 +19,13 @@ public class Administrator {
         while(true){
             System.out.println("Please enter the password.");
             String password = sc.nextLine();
-            //数据库检索，看密码是不是正确的。如果正确就退出循环继续操作。
-            break;//记得删除。
+            if(password.equals("root")){
+                System.out.println("Login successfully.");
+                break;
+            }
+            else{
+                System.out.println("Wrong password.");
+            }
         }
         while(true){
             System.out.println("What do you want to do?(Enter Help to get all operation)");
