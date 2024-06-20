@@ -1,7 +1,7 @@
 drop database database_PJ;
 create database database_PJ;
 use database_PJ;
-create table merchant(id int primary key auto_increment,name varchar(32),address varchar(128),phone_number varchar(32),main_dish varchar(32),unique (phone_number));
+create table merchant(id int primary key auto_increment,name varchar(32),address varchar(128),phone_number varchar(32),main_dish varchar(32),password varchar(32),unique (phone_number));
 create table user(id int primary key auto_increment,name varchar(32),gender varchar(32),student_id varchar(32),password varchar(32),unique (student_id));
 create table dish(sid int,id int auto_increment,name varchar(32),price int,picture varchar(128),sort varchar(32),nutrition varchar(128),allergen varchar(128),score int,total_score int,score_count int,primary key (id,sid));
 create table orders(id int primary key auto_increment,date date,time time,uid int,sid int,is_online TINYINT(1),comment varchar(256),state int);

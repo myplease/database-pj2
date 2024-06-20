@@ -250,7 +250,7 @@ public class Database {
         switch (table) {
             case "merchant" -> {
                 schema = Constant.merchantSchema;
-                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish) VALUES (?,?,?,?)";
+                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish,,password) VALUES (?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "user" -> {
@@ -349,6 +349,21 @@ public class Database {
         String[] schema = Constant.userSchema.toArray(new String[0]);
         return resultSetToList(resultSet,schema);
     }
+    public ArrayList<String[]> getMerchantInformation(int id) throws SQLException {
+        String line = "SELECT * FROM merchant WHERE id = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        String[] result= new String[Constant.merchantSchema.size() + 1];
+        for (int i = 0; i < Constant.merchantSchema.size(); i++) {
+            result[i] = resultSet.getString(Constant.merchantSchema.get(i));
+        }
+        result[Constant.merchantSchema.size()] = Float.toString(getMerchantScore(id));
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(result);
+        return list;
+    }
     public ArrayList<String[]> userSearchForMerchant(String information) throws SQLException {//用信息检索商家，返回简略信息
         String line = "SELECT id,name,main_dish FROM merchant WHERE name LIKE ?";
         String str = "%"+ information +"%";
@@ -446,7 +461,7 @@ public class Database {
     public boolean userOrderDish(int uid,int sid,int[] fid,int[] num,boolean is_online) throws SQLException {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        String[] orders_argv = {date,time,Integer.toString(uid),Integer.toString(sid),Boolean.toString(is_online),"no_text",Integer.toString(0)};
+        String[] orders_argv = {date,time,Integer.toString(uid),Integer.toString(sid),Integer.toString(is_online?1:0),"no_text",Integer.toString(0)};
         addData("orders",orders_argv);
         String line = "SELECT max(id) as id FROM orders";
         PreparedStatement statement = connection.prepareStatement(line);
