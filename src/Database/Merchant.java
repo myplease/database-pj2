@@ -15,23 +15,26 @@ public class Merchant {
 
     public void run(){
         Scanner sc = new Scanner(System.in);
-        System.out.println("Please choose to login or register(1 for login, 2 for register, else for exit).");
-        String choose = sc.nextLine();
-        switch(choose){
-            case "1":
-            case "2":
-                System.out.println("Please enter your phone: ");
-                String username = sc.nextLine();
-                System.out.println("Please enter your password: ");
-                String password = sc.nextLine();
-                LoginOrRegister(choose, username, password);
+        while(true){
+            int flag = 0;
+            System.out.println("Please choose to login or register(1 for login, 2 for register, else for exit).");
+            String choose = sc.nextLine();
+            switch(choose){
+                case "1":
+                case "2":
+                    System.out.println("Please enter your phone_number: ");
+                    String username = sc.nextLine();
+                    System.out.println("Please enter your password: ");
+                    String password = sc.nextLine();
+                    flag = LoginOrRegister(choose, username, password);
+                    break;
+                default:
+                    break;
+            }
+            if(flag == 0){
                 break;
-            default:
-                break;
+            }
         }
-        //TEST
-            s_id = 1;
-        //end
         while(true){
             System.out.println("Please enter your operation.(Enter Help to get all operation)");
             String operation = sc.nextLine();
@@ -96,18 +99,46 @@ public class Merchant {
         }
     }
 
-    public void LoginOrRegister(String operate, String username, String password){
+    public int LoginOrRegister(String operate, String username, String password){
+        Scanner sc = new Scanner(System.in);
         switch(operate){
             case "1":
-                //数据库操作，把商户信息传出来。
-                //登录操作
-                break;
+                try{
+                    s_id = Integer.parseInt(db.getMerchantIdByPhone_Number(username));
+                    ArrayList<String[]> informationTemp = db.showDetailedInformationOfMerchant(s_id);
+                    for(String[] information : informationTemp){
+                        if(password.equals(information[4])){
+                            System.out.println("Login successfully.");
+                        }
+                        else{
+                            System.out.println("Login failed.");
+                            return 1;
+                        }
+                    }
+                }
+                catch(SQLException e){
+                    System.out.println("Login failed.");
+                    return 1;
+                }
+                return 0;
             case "2":
-                //数据库操作，把商户信息存入。
-                //注册操作
-                break;
+                System.out.println("Please enter your name: ");
+                String name = sc.nextLine();
+                System.out.println("Please enter your address: ");
+                String address = sc.nextLine();
+                System.out.println("Please enter your main_dish: ");
+                String mainDish = sc.nextLine();
+                try{
+                    db.merchantRegister(name, address, username, mainDish);
+                    s_id = Integer.parseInt(db.getMerchantIdByPhone_Number(username));
+                    System.out.println("Register successfully.");
+                }
+                catch(SQLException e){
+                    System.out.println("Register failed.");
+                }
+                return 0;
             default:
-                break;
+                return 1;
         }
     }
 
@@ -241,36 +272,21 @@ public class Merchant {
 
     public void addMeal(){
         Scanner sc = new Scanner(System.in);
-        ArrayList<String> tempMeal = new ArrayList<>();
-        //test
-        tempMeal.add("1");
-        //test
         System.out.println("Please input the attribute.");
         System.out.println("Please input the name.");
         String name = sc.nextLine();
-        tempMeal.add(name);
         System.out.println("Please input the price");
         String price = sc.nextLine();
-        tempMeal.add(price);
         System.out.println("Please input the picture");
         String picture = sc.nextLine();
-        tempMeal.add(picture);
         System.out.println("Please input the sort");
         String sort = sc.nextLine();
-        tempMeal.add(sort);
         System.out.println("Please input the nutrition");
         String nutrition = sc.nextLine();
-        tempMeal.add(nutrition);
         System.out.println("Please input the allergen");
         String allergen = sc.nextLine();
-        tempMeal.add(allergen);
-        //test
-        tempMeal.add("2");
-        tempMeal.add("3");
-        tempMeal.add("4");
-        //
         try {
-            db.addData("dish", tempMeal.toArray(new String[0]));
+            db.merchantAddDish(s_id, name, price, picture, sort, nutrition, allergen);
         }
         catch (SQLException e){
             System.out.println("An error occurred.");

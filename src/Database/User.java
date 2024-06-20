@@ -17,19 +17,25 @@ public class User {
 
     public void run(){
         Scanner sc = new Scanner(System.in);
-        System.out.println("Please choose to login or register(1 for login, 2 for register, else for exit).");
-        String choose = sc.nextLine();
-        switch(choose){
-            case "1":
-            case "2":
-                System.out.println("Please enter your student_id: ");
-                String username = sc.nextLine();
-                System.out.println("Please enter your password: ");
-                String password = sc.nextLine();
-                LoginOrRegister(choose, username, password);
+        while(true){
+            int flag = 0;
+            System.out.println("Please choose to login or register(1 for login, 2 for register, else for exit).");
+            String choose = sc.nextLine();
+            switch(choose){
+                case "1":
+                case "2":
+                    System.out.println("Please enter your student_id: ");
+                    String username = sc.nextLine();
+                    System.out.println("Please enter your password: ");
+                    String password = sc.nextLine();
+                    flag = LoginOrRegister(choose, username, password);
+                    break;
+                default:
+                    break;
+            }
+            if(flag == 0){
                 break;
-            default:
-                break;
+            }
         }
         while(true){
             System.out.println("Please enter your operation.(Enter Help to get all operation)");
@@ -40,8 +46,7 @@ public class User {
                     System.out.println("Modify: modify your account.");
                     System.out.println("Search: search the merchant.");
                     System.out.println("Home: return to the main interface.");
-                    System.out.println("Order: view your orders.");
-                    System.out.println("Check: check your orders.");
+                    System.out.println("Order: view your orders' history.");
                     break;
                 case "View":
                     view();
@@ -56,48 +61,59 @@ public class User {
                     return;
                 case "Order":
                     order();
-                    return;
-                case "Check":
-                    check();
+                    break;
+                default:
                     break;
             }
         }
     }
 
-    public void LoginOrRegister(String operate, String username, String password){
+    public int LoginOrRegister(String operate, String username, String password){
         Scanner sc = new Scanner(System.in);
         switch(operate){
             case "1":
-                //数据库操作，把用户信息传出来。
-                //登录操作
-
-                break;
+                try{
+                    u_id = Integer.parseInt(db.getUserIdByStudent_id(username));
+                    ArrayList<String[]> informationTemp = db.getUserInformation(u_id);
+                    for(String[] information : informationTemp){
+                        if(password.equals(information[4])){
+                            System.out.println("Login successfully.");
+                        }
+                        else{
+                            System.out.println("Login failed.");
+                            return 1;
+                        }
+                    }
+                }
+                catch(SQLException e){
+                    System.out.println("Login failed.");
+                    return 1;
+                }
+                return 0;
             case "2":
-                //数据库操作，把用户信息存入。
-                //注册操作
                 System.out.println("Please enter your name: ");
                 String name = sc.nextLine();
                 System.out.println("Please enter your gender: ");
                 String gender = sc.nextLine();
                 try{
                     db.userRegister(name, gender, username, password);
+                    u_id = Integer.parseInt(db.getUserIdByStudent_id(username));
+                    System.out.println("Register successfully.");
                 }
                 catch(SQLException e){
-                    System.out.println("An error occurred.");
+                    System.out.println("Register failed.");
                 }
-                //更改u_id
-
-                break;
+                return 0;
             default:
-                break;
+                return 1;
         }
     }
 
     public void view(){
         try {
             ArrayList<String[]> temp = db.getUserInformation(u_id);
-            System.out.printf("%-5s%-20s%-5s%-20s%n","id", "name", "gender", "student_id");
-            String[] VIS = {"id", "name", "gender", "student_id"};
+            System.out.printf("%-5s%-20s%-10s%-20s%n","id", "name", "gender", "student_id");
+            String[] VIS = {"id", "name", "gender", "student_id", "password"};
             for (String[] strings : temp) {
                 dealMethod.printStr(strings, VIS);
             }
@@ -151,34 +167,41 @@ public class User {
     public void search(){
         System.out.println("Please enter the name or id of the merchant.");
         Scanner sc = new Scanner(System.in);
-        String search = sc.nextLine();
+        ArrayList<String[]> temp = new ArrayList<>();
         try {
-            ArrayList<String[]> temp = db.userSearchForMerchant(search);
+            while(true){
+                String search = sc.nextLine();
+                temp = db.userSearchForMerchant(search);
+                if(temp.isEmpty()){
+                    System.out.println("Can't find any merchant.(Please try again)");
+                }
+                else{
+                    break;
+                }
+            }
             System.out.printf("%-5s%-20s%-10s%n", "id", "name", "main_dish");
             String[] VIS = {"id", "name", "main_dish"};
             for(String[] strings : temp){
                 dealMethod.printStr(strings, VIS);
             }
-            if(temp.size() >= 2){
-                System.out.println("Please choose a merchant.(Input id)");
-                String[] idTemp = dealMethod.getID(temp);
-                while(true){
-                    int flag = 0;
-                    String idInput = sc.nextLine();
-                    for(String str : idTemp){
-                        if(str.equals(idInput)){
-                            flag = 1;
-                            s_id = Integer.parseInt(str);
-                            break;
-                        }
-                    }
-                    if(flag == 1){
-                        System.out.println("You have entered the merchant.");
+            System.out.println("Please choose a merchant.(Input id)");
+            String[] idTemp = dealMethod.getID(temp);
+            while(true){
+                int flag = 0;
+                String idInput = sc.nextLine();
+                for(String str : idTemp){
+                    if(str.equals(idInput)){
+                        flag = 1;
+                        s_id = Integer.parseInt(str);
                         break;
                     }
-                    else{
-                        System.out.println("Input error! Please enter again.");
-                    }
+                }
+                if(flag == 1){
+                    System.out.println("You have entered the merchant.");
+                    break;
+                }
+                else{
+                    System.out.println("Input error! Please enter again.");
                 }
             }
         }
@@ -196,6 +219,7 @@ public class User {
                     System.out.println("Sort: show the sorts.");
                     System.out.println("Choose: choose the meal.");
                     System.out.println("Exit: exit the merchant.");
+                    break;
                 case "Show":
                     show();
                     break;
@@ -218,15 +242,23 @@ public class User {
     }
 
     public void order(){
-    }
-
-    public void check(){
+        try {
+            ArrayList<String[]> ordHistory = db.userShowOrder(u_id);
+            System.out.printf("%-15s%15s%10s%10s%20s", "date", "time", "is_online", "state", "name");
+            String[] VIS = {"date", "time", "is_online", "state", "name"};
+            for(String[] his : ordHistory){
+                dealMethod.printStr(his, VIS);
+            }
+        }
+        catch (SQLException e){
+            System.out.println("An error occurred!");
+        }
     }
 
     public void show(){
         try {
             ArrayList<String[]> informationMer = db.showDetailedInformationOfMerchant(s_id);
-            System.out.printf("%-5s%-20s%-20s%-20s%-10s%n","id", "name", "address", "phone_number", "main_dish");
+            System.out.printf("%-5s%-20s%-20s%-20s%-15s%n","id", "name", "address", "phone_number", "main_dish");
             String[] VIS = {"id", "name", "address", "phone_number", "main_dish"};
             for(String[] strings : informationMer) {
                 dealMethod.printStr(strings, VIS);
@@ -256,7 +288,7 @@ public class User {
     public void printSort(){
         try {
             ArrayList<String[]> sortTemp = db.showSortOfMerchant(s_id);
-            System.out.printf("%-10s","sort");
+            System.out.printf("%-10s%n", "sort");
             for(String[] strings : sortTemp) {
                 dealMethod.printStr(strings, new String[]{"sort"});
             }
@@ -266,8 +298,79 @@ public class User {
     }
 
     public void chooseMeal(){
+        double sumMeal = 0;
+        boolean onlineTemp = false;
+        int[] mealId = new int[100];
+        int[] mealNum = new int[100];
+        double[] mealPrice = new double[100];
+        int maxM = 0;
         Scanner sc = new Scanner(System.in);
-        System.out.println("Please enter the name or id of the meal.");
-
+        while(true){
+            System.out.println("Please enter the id of the meal.");
+            String id = sc.nextLine();
+            try {
+                ArrayList<String[]> mealList = db.showDishOfMerchant(s_id);
+                String[] idTemp = new String[mealList.size()];
+                String[] mealPriceTemp = new String[mealList.size()];
+                for (int i = 0; i < mealList.size(); i++) {
+                    idTemp[i] = mealList.get(i)[0];
+                    mealPriceTemp[i] = mealList.get(i)[2];
+                }
+                int flagID = 0;
+                for(int i = 0; i < mealList.size(); i++) {
+                    if(id.equals(idTemp[i])){
+                        mealPrice[maxM] = Double.parseDouble(mealPriceTemp[i]);
+                        flagID = 1;
+                        break;
+                    }
+                }
+                if(flagID == 0){
+                    System.out.println("The meal can't be found! Please enter again.");
+                    continue;
+                }
+            }
+            catch (SQLException e) {
+                System.out.println("An error occurred!");
+            }
+            System.out.println("Please enter the number of the meal.(number > 0)");
+            String num = sc.nextLine();
+            while(true){
+                if(Integer.parseInt(num) <= 0){
+                    System.out.println("The number isn't valid! Please enter again.");
+                    num = sc.nextLine();
+                }
+                else{
+                    break;
+                }
+            }
+            mealNum[maxM] = Integer.parseInt(num);
+            mealId[maxM] = Integer.parseInt(id);
+            maxM++;
+            System.out.println("Do you still want to order?");
+            System.out.println("1 for yes. else for no");
+            String still = sc.nextLine();
+            if(still.equals("1")){
+                continue;
+            }
+            else{
+                break;
+            }
+        }
+        System.out.println("Please choose the online or not.(1 for yes, else for no)");
+        String choose = sc.nextLine();
+        if(choose.equals("1")){
+            onlineTemp = true;
+        }
+        for(int i = 0; i < maxM; i++){
+            sumMeal += mealPrice[i] * mealId[i];
+        }
+        System.out.println("You should pay "+ sumMeal);
+        try {
+            db.userOrderDish(u_id, s_id, mealId, mealNum, onlineTemp);
+        }
+        catch (SQLException e) {
+            System.out.println("An error occurred!");
+            e.printStackTrace();
+        }
     }
 }
