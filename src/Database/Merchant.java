@@ -97,6 +97,7 @@ public class Merchant {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.getStackTrace();
         }
     }
 

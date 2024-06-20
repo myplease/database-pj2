@@ -1,6 +1,7 @@
 package Database;
 
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -119,6 +120,7 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -161,6 +163,7 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -207,10 +210,10 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
-
-        System.out.println("Please enter your operate.(Enter Help to get all operation)");
         while(true){
+            System.out.println("Please enter your operate.(Enter Help to get all operation)");
             String operate = sc.nextLine();
             switch(operate){
                 case "Help":
@@ -218,6 +221,7 @@ public class User {
                     System.out.println("Deals: show the dishes.");
                     System.out.println("Sort: show the sorts.");
                     System.out.println("Choose: choose the meal.");
+                    System.out.println("Collection: collect the merchant");
                     System.out.println("Exit: exit the merchant.");
                     break;
                 case "Show":
@@ -232,6 +236,9 @@ public class User {
                 case "Choose":
                     chooseMeal();
                     break;
+                case "Collection":
+                    collectMerchant();
+                    break;
                 case "Exit":
                     return;
                 default:
@@ -241,17 +248,91 @@ public class User {
         }
     }
 
+    public void collectMerchant(){
+        try {
+            db.userLikeMerchant(u_id, s_id);
+        }
+        catch(SQLException e){
+            System.out.println("An error occurred!");
+            e.printStackTrace();
+        }
+    }
+
     public void order(){
+        Scanner sc = new Scanner(System.in);
         try {
             ArrayList<String[]> ordHistory = db.userShowOrder(u_id);
+            String[] order_id = dealMethod.getID(ordHistory);
+            String[] mealID = new String[1005];
+            for(int i = 0; i < ordHistory.size(); i++){
+                mealID[i] = ordHistory.get(i)[1];
+            }
             System.out.printf("%-15s%15s%10s%10s%20s", "date", "time", "is_online", "state", "name");
             String[] VIS = {"date", "time", "is_online", "state", "name"};
             for(String[] his : ordHistory){
                 dealMethod.printStr(his, VIS);
             }
+            System.out.println("You can give a score.(1 for yes, else for no)");
+            String judgeFlag = sc.nextLine();
+            if(judgeFlag.equals("1")){
+                System.out.println("You can judge the order or the meal.(1 for yes, else for meal)");
+                String judgeWhich = sc.nextLine();
+                String b_id = "";
+                if(judgeWhich.equals("1")){
+                    while(true){
+                        int flag = 0;
+                        System.out.println("Which one do you want to evaluate?");
+                        b_id = sc.nextLine();
+                        for(String o_id : order_id){
+                            if(b_id.equals(o_id)){
+                                flag = 1;
+                                break;
+                            }
+                        }
+                        if(flag == 0){
+                            System.out.println("The order isn't existing. Please input again.");
+                        }
+                        else{
+                            break;
+                        }
+                    }
+                    System.out.println("Please input your evaluation.");
+                    String evaluation = sc.nextLine();
+                    db.userCommentOnOrder(Integer.parseInt(b_id), evaluation);
+                }
+                else{
+                    while(true){
+                        System.out.println("Which meal do you want to evaluate?(input the raw beginning at 0)");
+                        String raw = sc.nextLine();
+                        if(Integer.parseInt(raw) < 0 || Integer.parseInt(raw) >= ordHistory.size()){
+                            System.out.println("The meal isn't existing. Please input again.");
+                        }
+                        else{
+                            System.out.println("Please input your score.(1 ~ 5)");
+                            while(true){
+                                String score = sc.nextLine();
+                                if(Integer.parseInt(score) < 1 || Integer.parseInt(score) > 5){
+                                    System.out.println("The score is wrong. Please input again.");
+                                    continue;
+                                }
+                                else{
+                                    db.userPutScoreOnOrderDish(
+                                            Integer.parseInt(ordHistory.get(Integer.parseInt(raw))[0]),
+                                            Integer.parseInt(ordHistory.get(Integer.parseInt(raw))[1]),
+                                            Integer.parseInt(score));
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                }
+            }
         }
         catch (SQLException e){
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -265,6 +346,7 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -282,6 +364,7 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -294,6 +377,7 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -306,8 +390,12 @@ public class User {
         int maxM = 0;
         Scanner sc = new Scanner(System.in);
         while(true){
-            System.out.println("Please enter the id of the meal.");
+            int whichOne = 0;
+            System.out.println("Please enter the id of the meal.(Exit for exit)");
             String id = sc.nextLine();
+            if(id.equals("Exit")){
+                return;
+            }
             try {
                 ArrayList<String[]> mealList = db.showDishOfMerchant(s_id);
                 String[] idTemp = new String[mealList.size()];
@@ -319,7 +407,7 @@ public class User {
                 int flagID = 0;
                 for(int i = 0; i < mealList.size(); i++) {
                     if(id.equals(idTemp[i])){
-                        mealPrice[maxM] = Double.parseDouble(mealPriceTemp[i]);
+                        whichOne = i;
                         flagID = 1;
                         break;
                     }
@@ -328,10 +416,28 @@ public class User {
                     System.out.println("The meal can't be found! Please enter again.");
                     continue;
                 }
+                System.out.println("Do you want to buy meal or collect it?");
+                System.out.println("Buy for buy. Collect for collect. Else for choose another");
+                String choice = sc.nextLine();
+                if(choice.equals("Buy")){
+                    mealPrice[maxM] = Double.parseDouble(mealPriceTemp[whichOne]);
+                }
+                else if(choice.equals("Collect")){
+                    db.userLikeDish(u_id, Integer.parseInt(id));
+                    continue;
+                }
+                else{
+                    continue;
+                }
+            }
+            catch (SQLIntegrityConstraintViolationException e){
+                System.out.println("Cant collect a thing twice.");
             }
             catch (SQLException e) {
                 System.out.println("An error occurred!");
+                e.printStackTrace();
             }
+
             System.out.println("Please enter the number of the meal.(number > 0)");
             String num = sc.nextLine();
             while(true){
@@ -370,6 +476,7 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 }

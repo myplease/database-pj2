@@ -1,14 +1,14 @@
 package Database;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import static java.lang.Integer.parseInt;
 
 import Data.Database;
 
 public class Administrator {
-    int u_id;
-    int s_id;
-
     private Database db;
     public Administrator(Database db){
         this.db = db;
@@ -32,15 +32,23 @@ public class Administrator {
             String option = sc.nextLine();
             switch(option){
                 case "Help":
-                    System.out.println("ChangeUser: change the user's account");
-                    System.out.println("ChangeMerchant: change the merchant's account");
+                    System.out.println("Add: add to any table.");
+                    System.out.println("Delete: delete from any table.");
+                    System.out.println("Change: change any table.");
+                    System.out.println("Query: query any table.");
                     System.out.println("Home: return to the main interface.");
                     break;
-                case "ChangeUser":
-                    changeUser();
+                case "Add":
+                    add();
                     break;
-                case "ChangeMerchant":
-                    changeMerchant();
+                case "Delete":
+                    delete();
+                    break;
+                case "Change":
+                    change();
+                    break;
+                case "Query":
+                    query();
                     break;
                 case "Home":
                     return;
@@ -51,46 +59,92 @@ public class Administrator {
         }
     }
 
-    public void changeUser(){
+    private void add(){
         Scanner sc = new Scanner(System.in);
+        System.out.println("Which table do you want to add?");
+        String table = sc.nextLine();
+        System.out.println("Please input the attribute.(stop stands end)");
+        String[] attributeList = new String[105];
+        int cmp = 0;
         while(true){
-            System.out.println("Do you want to change?(EXIT for exit)");
-            System.out.println("ID or userInformation");
-            String option = sc.nextLine();
-            switch (option) {
-                case "ID" -> {
-                    String id = sc.nextLine();
-                }
-                case "EXIT" -> {
-                    //数据库操作，更新数据
-
-                    return;
-                }
-                case "UserInformation" -> {}
-                default -> System.out.println("Input error!");
+            System.out.println("Input" + cmp + ": ");
+            String attribute = sc.nextLine();
+            if(attribute.equals("stop")){
+                break;
             }
+            attributeList[cmp] = attribute;
+            cmp++;
+        }
+        try {
+            db.addData(table, attributeList);
+        }
+        catch(Exception e){
+            System.out.println("Add error!");
         }
     }
 
-    public void changeMerchant(){
+    private void delete(){
         Scanner sc = new Scanner(System.in);
-        while(true){
-            System.out.println("Do you want to change?(EXIT for exit)");
-            System.out.println("ID, MerchantInformation or MerchantMenu.");
-            String option = sc.nextLine();
-            switch (option) {
-                case "ID" -> {
-                    String id = sc.nextLine();
-                }
-                case "EXIT" -> {
-                    //数据库操作，更新数据
+        System.out.println("Which table do you want to delete?");
+        String table = sc.nextLine();
+        System.out.println("Please input the id.");
+        String id = sc.nextLine();
+        try {
+            db.deleteData(table, new String[]{id});
+        }
+        catch(Exception e){
+            System.out.println("Delete error!");
+        }
+    }
 
-                    return;
-                }
-                case "MerchantInformation" -> {}
-                case "MerchantMenu" -> {}
-                default -> System.out.println("Input error!");
+    private void change(){
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Which table do you want to change?");
+        String table = sc.nextLine();
+        System.out.println("Please input the id.");
+        String id = sc.nextLine();
+        System.out.println("Which attribute do you want to change");
+        String attribute = sc.nextLine();
+        System.out.println("What's the new value.");
+        String value = sc.nextLine();
+        try {
+            db.changeData(table, new String[]{id}, attribute, value);
+        }
+        catch(Exception e){
+            System.out.println("Change error!");
+        }
+    }
+
+    private void query(){
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Which table do you want to query?");
+        String table = sc.nextLine();
+        System.out.println("Please input the attribute.(stop stands end)");
+        String[] attributeList = new String[105];
+        int cmp = 0;
+        while(true){
+            System.out.println("Input" + cmp + ": ");
+            String attribute = sc.nextLine();
+            if(attribute.equals("stop")){
+                break;
             }
+            attributeList[cmp] = attribute;
+            cmp++;
+        }
+        System.out.println("Please input the condition.(A = B)");
+        System.out.println("input A");
+        String conditionA = sc.nextLine();
+        System.out.println("input B");
+        String conditionB = sc.nextLine();
+        dealMethod.printStr(attributeList, attributeList);
+        try {
+            ArrayList<String[]> allAttribute = db.selectData(table, attributeList, conditionA, conditionB);
+            for(String[] attribute : allAttribute){
+                dealMethod.printStr(attribute, attributeList);
+            }
+        }
+        catch (SQLException e){
+            System.out.println("Query error.");
         }
     }
 }

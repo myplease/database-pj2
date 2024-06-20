@@ -198,7 +198,7 @@ public class Database {
         if(statement.executeUpdate() >= 1) return true;
         else return false;
     }
-    public List<String[]> selectData(String table,String[] argv,String entry,String value) throws SQLException {
+    public ArrayList<String[]> selectData(String table,String[] argv,String entry,String value) throws SQLException {
         List<String> schema;
         switch (table) {
             case "merchant" -> schema = Constant.merchantSchema;
@@ -233,7 +233,7 @@ public class Database {
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setString(1,value);
         ResultSet resultSet = statement.executeQuery();
-        List<String[]> resultList = new ArrayList<>();
+        ArrayList<String[]> resultList = new ArrayList<>();
         while (resultSet.next()){
             String[] row = new String[argv.length];
             for (int i = 0; i < argv.length; i++) {
@@ -443,11 +443,11 @@ public class Database {
         return changeData("message",argv,"is_read","1");
     }
     public ArrayList<String[]> userShowOrder(int uid) throws SQLException {
-        String line = "SELECT bid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
+        String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,uid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"bid","date","time","state","name"};
+        String[] schema = {"bid","fid","date","time","state","name"};
         return resultSetToList(resultSet,schema);
     }
     public boolean userCommentOnOrder(int bid,String comment) throws SQLException {
