@@ -250,7 +250,7 @@ public class Database {
         switch (table) {
             case "merchant" -> {
                 schema = Constant.merchantSchema;
-                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish,,password) VALUES (?,?,?,?,?)";
+                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish,password) VALUES (?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "user" -> {
@@ -325,8 +325,8 @@ public class Database {
         String[] argv = {name,gender,student_id,password};
         return addData("user",argv);
     }
-    public boolean merchantRegister(String name,String address,String phone_number,String main_dish) throws SQLException {
-        String[] argv = {name,address,phone_number,main_dish};
+    public boolean merchantRegister(String name,String address,String phone_number,String main_dish,String password) throws SQLException {
+        String[] argv = {name,address,phone_number,main_dish,password};
         return addData("merchant",argv);
     }
     public boolean merchantAddDish(int sid,String name,String price,String picture,String sort,String nutrition,String allergen) throws SQLException {
@@ -374,7 +374,7 @@ public class Database {
         return resultSetToList(resultSet,schema);
     }
     public ArrayList<String[]> showDetailedInformationOfMerchant(int id) throws SQLException {
-        String line = "SELECT id,name,address,phone_number,main_dish FROM merchant WHERE id = ?";
+        String line = "SELECT id,name,address,phone_number,main_dish,password FROM merchant WHERE id = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,id);
         ResultSet resultSet = statement.executeQuery();

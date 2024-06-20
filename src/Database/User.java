@@ -258,7 +258,7 @@ public class User {
     public void show(){
         try {
             ArrayList<String[]> informationMer = db.showDetailedInformationOfMerchant(s_id);
-            System.out.printf("%-5s%-20s%-20s%-20s%-15s%n","id", "name", "address", "phone_number", "main_dish");
+            System.out.printf("%-5s%-20s%-20s%-15s%-15s%n","id", "name", "address", "phone_number", "main_dish");
             String[] VIS = {"id", "name", "address", "phone_number", "main_dish"};
             for(String[] strings : informationMer) {
                 dealMethod.printStr(strings, VIS);
@@ -370,7 +370,6 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 }

@@ -10,7 +10,7 @@ public class dealMethod {
                 case "id" -> System.out.printf("%-5s", s);
                 case "name" -> System.out.printf("%-20s", s);
                 case "address" -> System.out.printf("%-20s", s);
-                case "phone_number" -> System.out.printf("%-20s", s);
+                case "phone_number" -> System.out.printf("%-15s", s);
                 case "main_dish" -> System.out.printf("%-10s", s);
                 case "sid" -> System.out.printf("%-5s", s);
                 case "price" -> System.out.printf("%-10s", s);

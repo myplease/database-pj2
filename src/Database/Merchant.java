@@ -106,9 +106,9 @@ public class Merchant {
             case "1":
                 try{
                     s_id = Integer.parseInt(db.getMerchantIdByPhone_Number(username));
-                    ArrayList<String[]> informationTemp = db.showDetailedInformationOfMerchant(s_id);
+                    ArrayList<String[]> informationTemp = db.getMerchantInformation(s_id);
                     for(String[] information : informationTemp){
-                        if(password.equals(information[4])){
+                        if(password.equals(information[5])){
                             System.out.println("Login successfully.");
                         }
                         else{
@@ -130,7 +130,7 @@ public class Merchant {
                 System.out.println("Please enter your main_dish: ");
                 String mainDish = sc.nextLine();
                 try{
-                    db.merchantRegister(name, address, username, mainDish);
+                    db.merchantRegister(name, address, username, mainDish, password);
                     s_id = Integer.parseInt(db.getMerchantIdByPhone_Number(username));
                     System.out.println("Register successfully.");
                 }
@@ -147,7 +147,7 @@ public class Merchant {
         try {
             ArrayList<String[]> merchantInf = db.showDetailedInformationOfMerchant(s_id);
             System.out.printf("%-5s%-20s%-20s%-15s%-10s%n", "id", "name", "address", "phone_number", "main_dish");
-            String[] VIS = {"id", "name", "address", "phone_number", "main_dish"};
+            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "password"};
             for (String[] strings : merchantInf) {
                 dealMethod.printStr(strings, VIS);
             }
@@ -232,32 +232,32 @@ public class Merchant {
                         System.out.println("Please enter the new name.");
                         String name = sc.nextLine();
                         db.changeData("dish", new String[]{meal_id}, "name", name);
-                        break;
+                        return;
                     case "Price":
                         System.out.println("Please enter the new price.");
                         String price = sc.nextLine();
                         db.changeData("dish", new String[]{meal_id}, "price", price);
-                        break;
+                        return;
                     case "Picture":
                         System.out.println("Please enter the new picture.");
                         String picture = sc.nextLine();
                         db.changeData("dish", new String[]{meal_id}, "picture", picture);
-                        break;
+                        return;
                     case "Classification":
                         System.out.println("Please enter the new classification.");
                         String classification = sc.nextLine();
                         db.changeData("dish", new String[]{meal_id}, "sort", classification);
-                        break;
+                        return;
                     case "Nutrition":
                         System.out.println("Please enter the new nutrition.");
                         String nutrition = sc.nextLine();
                         db.changeData("dish", new String[]{meal_id}, "nutrition", nutrition);
-                        break;
+                        return;
                     case "Allergen":
                         System.out.println("Please enter the new allergen.");
                         String allergen = sc.nextLine();
                         db.changeData("dish", new String[]{meal_id}, "allergen", allergen);
-                        break;
+                        return;
                     case "EXIT":
                         return;
                     default:
