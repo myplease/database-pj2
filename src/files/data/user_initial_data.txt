@@ -1,1 +1,2 @@
 user_name0 male 22302010069 password0
+user_name1 male 22302010070 password0

@@ -198,7 +198,7 @@ public class Database {
         if(statement.executeUpdate() >= 1) return true;
         else return false;
     }
-    public List<String[]> selectData(String table,String[] argv,String entry,String value) throws SQLException {
+    public ArrayList<String[]> selectData(String table,String[] argv,String entry,String value) throws SQLException {
         List<String> schema;
         switch (table) {
             case "merchant" -> schema = Constant.merchantSchema;
@@ -233,7 +233,7 @@ public class Database {
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setString(1,value);
         ResultSet resultSet = statement.executeQuery();
-        List<String[]> resultList = new ArrayList<>();
+        ArrayList<String[]> resultList = new ArrayList<>();
         while (resultSet.next()){
             String[] row = new String[argv.length];
             for (int i = 0; i < argv.length; i++) {
@@ -250,7 +250,7 @@ public class Database {
         switch (table) {
             case "merchant" -> {
                 schema = Constant.merchantSchema;
-                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish,,password) VALUES (?,?,?,?,?)";
+                sqlStatement = "INSERT INTO merchant (name,address,phone_number,main_dish,password) VALUES (?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "user" -> {
@@ -374,7 +374,7 @@ public class Database {
         return resultSetToList(resultSet,schema);
     }
     public ArrayList<String[]> showDetailedInformationOfMerchant(int id) throws SQLException {
-        String line = "SELECT id,name,address,phone_number,main_dish FROM merchant WHERE id = ?";
+        String line = "SELECT id,name,address,phone_number,main_dish,password FROM merchant WHERE id = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,id);
         ResultSet resultSet = statement.executeQuery();
@@ -503,13 +503,30 @@ public class Database {
         return resultList;
     }
     private float getMerchantScore(int id) throws SQLException {
-        String line = "SELECT AVG(dish.score) as score FROM dish JOIN merchant ON dish.sid = merchant.id WHERE merchant.id = ?";
+        String line = "SELECT AVG(dish.score) as score FROM dish JOIN merchant ON dish.sid = merchant.id WHERE merchant.id = ? AND dish.score > 0";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,id);
         ResultSet resultSet = statement.executeQuery();
         resultSet.next();
         return resultSet.getFloat("score");
     }
-    //TODO 用户确认菜已经收到
-
+    public ArrayList<String[]> getMostBuyUserOfDishFromMerchant(int sid) throws SQLException {
+        String line = "WITH temp AS(SELECT fid,uid,SUM(order_dish.number) as count FROM order_dish JOIN orders ON order_dish.bid = orders.id WHERE orders.sid = ? GROUP BY fid,orders.uid)" +
+                ",temp2 AS(SELECT fid,uid,count FROM temp WHERE count = (SELECT MAX(count) FROM temp WHERE fid = temp.fid)) ";
+        line = line + "SELECT dish.id as fid,dish.name as dish_name,user.name as user_name FROM temp2 JOIN dish JOIN user WHERE dish.id = temp2.fid AND user.id = temp2.uid";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"fid","dish_name","user_name"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> getAvgScoreAndSaleOfDishFromMerchant(int sid) throws SQLException {
+        String line = "SELECT id,name,price,picture,sort,dish.score as score,SUM(number) as number FROM dish LEFT JOIN order_dish ON dish.id = order_dish.fid WHERE dish.sid = ? GROUP BY id,name,price,picture,sort,score";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"id","name","price","picture","sort","score","number"};
+        return resultSetToList(resultSet,schema);
+    }
+    /*public ArrayList<String[]>*/
 }
