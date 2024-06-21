@@ -3,6 +3,7 @@ package Data;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -337,6 +338,14 @@ public class Database {
         String[] argv = {Integer.toString(fid)};
         return changeData("dish",argv,"price",Integer.toString(price));
     }
+    public ArrayList<String[]> merchantGetOrder(int sid) throws SQLException {
+        String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"bid","fid","date","time","is_online","state","name"};
+        return resultSetToList(resultSet,schema);
+    }
     public boolean merchantOrderReady(int bid) throws SQLException {
         String[] argv = {Integer.toString(bid)};
         return changeData("order",argv,"state",Integer.toString(1));
@@ -521,12 +530,50 @@ public class Database {
         return resultSetToList(resultSet,schema);
     }
     public ArrayList<String[]> getAvgScoreAndSaleOfDishFromMerchant(int sid) throws SQLException {
-        String line = "SELECT id,name,price,picture,sort,dish.score as score,SUM(number) as number FROM dish LEFT JOIN order_dish ON dish.id = order_dish.fid WHERE dish.sid = ? GROUP BY id,name,price,picture,sort,score";
+        String line = "WITH online_sale_num AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as online_num FROM dish JOIN order_dish JOIN orders ON dish.id = order_dish.fid AND order_dish.bid = orders.id WHERE dish.sid = ? AND orders.is_online = 1 GROUP BY fid)" +
+                ",offline_sale_num AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as offline_num FROM dish JOIN order_dish JOIN orders ON dish.id = order_dish.fid AND order_dish.bid = orders.id WHERE dish.sid = ? AND orders.is_online = 0 GROUP BY fid)"+
+        "SELECT id,name,price,picture,sort,dish.score as score,online_num,offline_num FROM dish LEFT JOIN online_sale_num ON dish.id = online_sale_num.fid LEFT JOIN offline_sale_num ON dish.id = offline_sale_num.fid WHERE dish.sid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
+        statement.setInt(2,sid);
+        statement.setInt(3,sid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"id","name","price","picture","sort","score","number"};
+        String[] schema = {"id","name","price","picture","sort","score","online_num","offline_num"};
         return resultSetToList(resultSet,schema);
     }
-    /*public ArrayList<String[]>*/
+    public ArrayList<String[]> userGetSaleNumOfDishFromLike(int uid) throws SQLException {
+        String line = "WITH week_sale AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as week_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 WEEK GROUP BY fid)" +
+                ",month_sale AS( SELECT order_dish.fid as fid,sum(order_dish.number) as month_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 MONTH GROUP BY fid)"+
+                ",year_sale AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as year_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 YEAR GROUP BY fid)"+
+                "SELECT dish.id as fid,name,week_sale_num,month_sale_num,year_sale_num FROM dish JOIN like_dish JOIN week_sale JOIN month_sale JOIN year_sale ON dish.id = like_dish.fid AND week_sale.fid = dish.id AND month_sale.fid = dish.id AND year_sale.fid = dish.id WHERE like_dish.uid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,uid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"fid","name","week_sale_num","month_sale_num","year_sale_num"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showFansOfMerchant(int sid) throws SQLException {
+        String line = "WITH fans AS (SELECT uid,count(id) as num FROM orders WHERE orders.sid = ? GROUP BY uid having count(id) >= ?)"+
+                " SELECT id as uid,name,num as order_num FROM user JOIN fans ON user.id = fans.uid";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        statement.setInt(2,Constant.INF_ORDER_NUM_OF_FAN);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"uid","name","order_num"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showOrderDishOfUserInMerchant(int sid,int uid,String time) throws SQLException {
+        List<String> time_list = Arrays.asList("WEEK","MONTH","YEAR");
+        if(!time_list.contains(time)) return null;
+        String line = "WITH order_dish_num AS (SELECT fid,sum(number) as num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE orders.sid = ? AND orders.uid = ? AND TIMESTAMP(date, time) >= NOW() - INTERVAL 1 " + time + " GROUP BY fid)" +
+                " SELECT fid,name as dish_name,num as dish_num FROM dish JOIN order_dish_num ON dish.id = order_dish_num.fid WHERE dish.sid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        statement.setInt(2,uid);
+        statement.setInt(3,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"fid","dish_name","dish_num"};
+        return resultSetToList(resultSet,schema);
+    }
+
 }
