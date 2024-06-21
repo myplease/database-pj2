@@ -3,6 +3,7 @@ package Data;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -561,8 +562,10 @@ public class Database {
         String[] schema = {"uid","name","order_num"};
         return resultSetToList(resultSet,schema);
     }
-    public ArrayList<String[]> showOrderDishOfUserInMerchant(int sid,int uid) throws SQLException {
-        String line = "WITH order_dish_num AS (SELECT fid,sum(number) as num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE orders.sid = ? AND orders.uid = ? GROUP BY fid)" +
+    public ArrayList<String[]> showOrderDishOfUserInMerchant(int sid,int uid,String time) throws SQLException {
+        List<String> time_list = Arrays.asList("WEEK","MONTH","YEAR");
+        if(!time_list.contains(time)) return null;
+        String line = "WITH order_dish_num AS (SELECT fid,sum(number) as num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE orders.sid = ? AND orders.uid = ? AND TIMESTAMP(date, time) >= NOW() - INTERVAL 1 " + time + " GROUP BY fid)" +
                 " SELECT fid,name as dish_name,num as dish_num FROM dish JOIN order_dish_num ON dish.id = order_dish_num.fid WHERE dish.sid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
@@ -572,5 +575,5 @@ public class Database {
         String[] schema = {"fid","dish_name","dish_num"};
         return resultSetToList(resultSet,schema);
     }
-    
+
 }
