@@ -49,6 +49,7 @@ public class User {
                     System.out.println("Home: return to the main interface.");
                     System.out.println("Order: view your orders' history.");
                     System.out.println("ShowCollection: show your collections.");
+                    System.out.println("UnreadMessage: show the message you dont read.");
                     break;
                 case "View":
                     view();
@@ -66,9 +67,60 @@ public class User {
                     break;
                 case "ShowCollection":
                     showCollection();
+                    break;
+                case "UnreadMessage":
+                    unreadMessage();
+                    break;
                 default:
                     break;
             }
+        }
+    }
+
+    public void unreadMessage(){
+        Scanner sc = new Scanner(System.in);
+        String[] messageID = new String[105];
+        try {
+            ArrayList<String[]> message = db.userShowMessageUnread(u_id);
+            messageID = dealMethod.getID(message);
+            String[] VIS = {"id", "date", "time", "text"};
+            System.out.printf("%-5s%-15s%-15s%-256s%n","id", "date", "time", "text");
+            for(String[] mes : message){
+                dealMethod.printStr(mes, VIS);
+            }
+        }
+        catch (SQLException e){
+            System.out.println("An error occurred while reading your message");
+            e.printStackTrace();
+        }
+        String m_id = "";
+        while(true){
+            System.out.println("You can read message.");
+            System.out.println("You should input the id. Or Exit to exit.");
+            m_id = sc.nextLine();
+            if(m_id.equals("exit")){
+                return;
+            }
+            int flag = 0;
+            for(String id : messageID){
+                if(id.equals(m_id)){
+                    flag = 1;
+                    break;
+                }
+            }
+            if(flag == 0){
+                System.out.println("You input a Non-existent message. Please try again.");
+            }
+            else{
+                break;
+            }
+        }
+        try {
+            db.userReadMessage(Integer.parseInt(m_id));
+        }
+        catch (SQLException e){
+            System.out.println("An error occurred while reading your message.");
+            e.printStackTrace();
         }
     }
 

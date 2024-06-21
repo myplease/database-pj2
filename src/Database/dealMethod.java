@@ -28,6 +28,7 @@ public class dealMethod {
                 case "is_online" -> System.out.printf("%-10s", s);
                 case "status" -> System.out.printf("%-10s", s);
                 case "state" -> System.out.printf("%-10s", s);
+                case "text" -> System.out.printf("%-256s", s);
                 case "password" -> {}
                 case "skip" -> {}
                 default -> System.out.printf("%-5s", s);
