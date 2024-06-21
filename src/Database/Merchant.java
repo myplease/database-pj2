@@ -75,7 +75,7 @@ public class Merchant {
         Scanner sc = new Scanner(System.in);
         try {
             ArrayList<String[]> dealTemp = db.showDishOfMerchant(s_id);
-            System.out.printf("%-5s%-20s%-10s%-10s%-10s%n", "id", "name", "price", "picture", "sort");
+            System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "id", "name", "price", "picture", "sort");
             String[] VIS = {"id", "name", "price", "picture", "sort"};
             for(String[] d : dealTemp){
                 dealMethod.printStr(d, VIS);
@@ -88,7 +88,7 @@ public class Merchant {
             else{
                 String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
                     "score", "total_score", "score_count"};
-                System.out.printf("%-5s%-5s%-20s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
+                System.out.printf("%-5s%-5s%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
                         "nutrition", "allergen", "score", "total_score", "score_count");
                 ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(command));
                 for(String[] d : idsDealTemp){
@@ -147,8 +147,8 @@ public class Merchant {
     public void showInf(){
         try {
             ArrayList<String[]> merchantInf = db.showDetailedInformationOfMerchant(s_id);
-            System.out.printf("%-5s%-20s%-20s%-15s%-10s%n", "id", "name", "address", "phone_number", "main_dish");
-            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "password"};
+            System.out.printf("%-5s%-15s%-20s%-15s%-15s%-10s%n", "id", "name", "address", "phone_number", "main_dish", "score");
+            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "password", "score"};
             for (String[] strings : merchantInf) {
                 dealMethod.printStr(strings, VIS);
             }
@@ -212,7 +212,7 @@ public class Merchant {
         System.out.println("Please choose a meal.(Input a id)");
         String meal_id = sc.nextLine();
         try {
-            System.out.printf("%-5s%-5s%-20s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
+            System.out.printf("%-5s%-5s%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
                     "nutrition", "allergen", "score", "total_score", "score_count");
             String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
                     "score", "total_score", "score_count"};

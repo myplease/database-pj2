@@ -8,10 +8,10 @@ public class dealMethod {
         for (String s : list) {
             switch(vis[cmp]){
                 case "id" -> System.out.printf("%-5s", s);
-                case "name" -> System.out.printf("%-20s", s);
+                case "name" -> System.out.printf("%-15s", s);
                 case "address" -> System.out.printf("%-20s", s);
                 case "phone_number" -> System.out.printf("%-15s", s);
-                case "main_dish" -> System.out.printf("%-10s", s);
+                case "main_dish" -> System.out.printf("%-15s", s);
                 case "sid" -> System.out.printf("%-5s", s);
                 case "price" -> System.out.printf("%-10s", s);
                 case "picture" -> System.out.printf("%-10s", s);
@@ -27,7 +27,9 @@ public class dealMethod {
                 case "time" -> System.out.printf("%-15s", s);
                 case "is_online" -> System.out.printf("%-10s", s);
                 case "status" -> System.out.printf("%-10s", s);
+                case "state" -> System.out.printf("%-10s", s);
                 case "password" -> {}
+                case "skip" -> {}
                 default -> System.out.printf("%-5s", s);
             }
             cmp++;

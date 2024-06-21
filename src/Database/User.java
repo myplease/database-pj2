@@ -48,6 +48,7 @@ public class User {
                     System.out.println("Search: search the merchant.");
                     System.out.println("Home: return to the main interface.");
                     System.out.println("Order: view your orders' history.");
+                    System.out.println("ShowCollection: show your collections.");
                     break;
                 case "View":
                     view();
@@ -63,8 +64,45 @@ public class User {
                 case "Order":
                     order();
                     break;
+                case "ShowCollection":
+                    showCollection();
                 default:
                     break;
+            }
+        }
+    }
+
+    public void showCollection(){
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Which one do you want to see.");
+        System.out.println("1 for merchants. 2 for meals. else for exit");
+        String choose = sc.nextLine();
+        if(choose.equals("1")){
+            try {
+                ArrayList<String[]> likeMerchant = db.userShowLikeMerchant(u_id);
+                System.out.printf("%-5s%-15s%-15s%n","id", "name", "main_dish");
+                String[] VIS = {"id", "name", "main_dish"};
+                for(String[] likeMerchantTemp: likeMerchant){
+                    dealMethod.printStr(likeMerchantTemp, VIS);
+                }
+            }
+            catch(SQLException e){
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+        }
+        else if(choose.equals("2")){
+            try {
+                ArrayList<String[]> likeDishes = db.userShowLikeDish(u_id);
+                System.out.printf("%-5s%-15s%-10s%-10s%-10s%n","id", "name", "price", "picture", "sort");
+                String[] VIS = {"id", "name", "price", "picture", "sort"};
+                for(String[] likeDishesTemp: likeDishes){
+                    dealMethod.printStr(likeDishesTemp, VIS);
+                }
+            }
+            catch(SQLException e){
+                System.out.println("An error occurred.");
+                e.printStackTrace();
             }
         }
     }
@@ -113,7 +151,7 @@ public class User {
     public void view(){
         try {
             ArrayList<String[]> temp = db.getUserInformation(u_id);
-            System.out.printf("%-5s%-20s%-10s%-20s%n","id", "name", "gender", "student_id");
+            System.out.printf("%-5s%-15s%-10s%-20s%n","id", "name", "gender", "student_id");
             String[] VIS = {"id", "name", "gender", "student_id", "password"};
             for (String[] strings : temp) {
                 dealMethod.printStr(strings, VIS);
@@ -168,7 +206,7 @@ public class User {
     }
 
     public void search(){
-        System.out.println("Please enter the name or id of the merchant.");
+        System.out.println("Please enter the name of the merchant.");
         Scanner sc = new Scanner(System.in);
         ArrayList<String[]> temp = new ArrayList<>();
         try {
@@ -182,7 +220,7 @@ public class User {
                     break;
                 }
             }
-            System.out.printf("%-5s%-20s%-10s%n", "id", "name", "main_dish");
+            System.out.printf("%-5s%-15s%-15s%n", "id", "name", "main_dish");
             String[] VIS = {"id", "name", "main_dish"};
             for(String[] strings : temp){
                 dealMethod.printStr(strings, VIS);
@@ -253,8 +291,7 @@ public class User {
             db.userLikeMerchant(u_id, s_id);
         }
         catch(SQLException e){
-            System.out.println("An error occurred!");
-            e.printStackTrace();
+            System.out.println("Cant collect a merchant twice.");
         }
     }
 
@@ -267,8 +304,8 @@ public class User {
             for(int i = 0; i < ordHistory.size(); i++){
                 mealID[i] = ordHistory.get(i)[1];
             }
-            System.out.printf("%-15s%15s%10s%10s%20s", "date", "time", "is_online", "state", "name");
-            String[] VIS = {"date", "time", "is_online", "state", "name"};
+            System.out.printf("%-15s%-15s%-10s%-10s%-15s%n", "date", "time", "is_online", "state", "name");
+            String[] VIS = {"skip", "skip", "date", "time", "is_online", "state", "name"};
             for(String[] his : ordHistory){
                 dealMethod.printStr(his, VIS);
             }
@@ -339,8 +376,8 @@ public class User {
     public void show(){
         try {
             ArrayList<String[]> informationMer = db.showDetailedInformationOfMerchant(s_id);
-            System.out.printf("%-5s%-20s%-20s%-15s%-15s%n","id", "name", "address", "phone_number", "main_dish");
-            String[] VIS = {"id", "name", "address", "phone_number", "main_dish"};
+            System.out.printf("%-5s%-15s%-20s%-15s%-15s%-10s%n","id", "name", "address", "phone_number", "main_dish", "score");
+            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "password", "score"};
             for(String[] strings : informationMer) {
                 dealMethod.printStr(strings, VIS);
             }
@@ -354,7 +391,7 @@ public class User {
         try {
             ArrayList<String[]> dealTemp = db.showDishOfMerchant(s_id);
             String[] idsDealTemp = dealMethod.getID(dealTemp);
-            System.out.printf("%-5s%-5s%-20s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
+            System.out.printf("%-5s%-5s%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
                     "nutrition", "allergen", "score", "total_score", "score_count");
             String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
                     "score", "total_score", "score_count"};
@@ -384,9 +421,9 @@ public class User {
     public void chooseMeal(){
         double sumMeal = 0;
         boolean onlineTemp = false;
-        int[] mealId = new int[100];
-        int[] mealNum = new int[100];
-        double[] mealPrice = new double[100];
+        ArrayList<Integer> mealId = new ArrayList<>();
+        ArrayList<Integer> mealNum = new ArrayList<>();
+        double[] mealPrice = new double[105];
         int maxM = 0;
         Scanner sc = new Scanner(System.in);
         while(true){
@@ -449,8 +486,8 @@ public class User {
                     break;
                 }
             }
-            mealNum[maxM] = Integer.parseInt(num);
-            mealId[maxM] = Integer.parseInt(id);
+            mealNum.add(Integer.parseInt(num));
+            mealId.add(Integer.parseInt(id));
             maxM++;
             System.out.println("Do you still want to order?");
             System.out.println("1 for yes. else for no");
@@ -468,11 +505,17 @@ public class User {
             onlineTemp = true;
         }
         for(int i = 0; i < maxM; i++){
-            sumMeal += mealPrice[i] * mealId[i];
+            sumMeal += mealPrice[i] * mealId.get(i);
         }
         System.out.println("You should pay "+ sumMeal);
+        int[] mealIdInt = new int[maxM];
+        int[] mealNumInt = new int[maxM];
         try {
-            db.userOrderDish(u_id, s_id, mealId, mealNum, onlineTemp);
+            for(int i = 0; i < maxM; i++){
+                mealIdInt[i] = mealId.get(i);
+                mealNumInt[i] = mealNum.get(i);
+            }
+            db.userOrderDish(u_id, s_id, mealIdInt, mealNumInt, onlineTemp);
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
