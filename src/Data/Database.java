@@ -343,7 +343,7 @@ public class Database {
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"bid","fid","date","time","state","name"};
+        String[] schema = {"bid","fid","date","time","is_online","state","name"};
         return resultSetToList(resultSet,schema);
     }
     public boolean merchantOrderReady(int bid) throws SQLException {
@@ -456,7 +456,7 @@ public class Database {
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,uid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"bid","fid","date","time","state","name"};
+        String[] schema = {"bid","fid","date","time","is_online","state","name"};
         return resultSetToList(resultSet,schema);
     }
     public boolean userCommentOnOrder(int bid,String comment) throws SQLException {
