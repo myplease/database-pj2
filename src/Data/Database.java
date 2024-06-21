@@ -551,4 +551,26 @@ public class Database {
         String[] schema = {"fid","name","week_sale_num","month_sale_num","year_sale_num"};
         return resultSetToList(resultSet,schema);
     }
+    public ArrayList<String[]> showFansOfMerchant(int sid) throws SQLException {
+        String line = "WITH fans AS (SELECT uid,count(id) as num FROM orders WHERE orders.sid = ? GROUP BY uid having count(id) >= ?)"+
+                " SELECT id as uid,name,num as order_num FROM user JOIN fans ON user.id = fans.uid";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        statement.setInt(2,Constant.INF_ORDER_NUM_OF_FAN);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"uid","name","order_num"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showOrderDishOfUserInMerchant(int sid,int uid) throws SQLException {
+        String line = "WITH order_dish_num AS (SELECT fid,sum(number) as num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE orders.sid = ? AND orders.uid = ? GROUP BY fid)" +
+                " SELECT fid,name as dish_name,num as dish_num FROM dish JOIN order_dish_num ON dish.id = order_dish_num.fid WHERE dish.sid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        statement.setInt(2,uid);
+        statement.setInt(3,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"fid","dish_name","dish_num"};
+        return resultSetToList(resultSet,schema);
+    }
+    
 }
