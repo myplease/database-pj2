@@ -64,7 +64,7 @@ public class Administrator {
         System.out.println("Which table do you want to add?");
         String table = sc.nextLine();
         System.out.println("Please input the attribute.(stop stands end)");
-        String[] attributeList = new String[105];
+        ArrayList<String> attributeList = new ArrayList<>();
         int cmp = 0;
         while(true){
             System.out.println("Input" + cmp + ": ");
@@ -72,11 +72,11 @@ public class Administrator {
             if(attribute.equals("stop")){
                 break;
             }
-            attributeList[cmp] = attribute;
+            attributeList.add(attribute);
             cmp++;
         }
         try {
-            db.addData(table, attributeList);
+            db.addData(table, attributeList.toArray(new String[0]));
         }
         catch(Exception e){
             System.out.println("Add error!");

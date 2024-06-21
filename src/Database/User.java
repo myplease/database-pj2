@@ -257,9 +257,11 @@ public class User {
                 case "Help":
                     System.out.println("Show: show the merchant information.");
                     System.out.println("Deals: show the dishes.");
+                    System.out.println("DealInteresting: show the dish by the information you input.");
                     System.out.println("Sort: show the sorts.");
                     System.out.println("Choose: choose the meal.");
-                    System.out.println("Collection: collect the merchant");
+                    System.out.println("Collection: collect the merchant.");
+                    System.out.println("ShowEvaluation: show the evaluations of the merchant.");
                     System.out.println("Exit: exit the merchant.");
                     break;
                 case "Show":
@@ -267,6 +269,9 @@ public class User {
                     break;
                 case "Deals":
                     printDeals();
+                    break;
+                case "DealInteresting":
+                    dealInteresting();
                     break;
                 case "Sort":
                     printSort();
@@ -277,6 +282,9 @@ public class User {
                 case "Collection":
                     collectMerchant();
                     break;
+                case "ShowEvaluation":
+                    showEvaluation();
+                    break;
                 case "Exit":
                     return;
                 default:
@@ -284,6 +292,29 @@ public class User {
                     break;
             }
         }
+    }
+
+    public void dealInteresting(){
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Please enter the information which do you want to search for meals.");
+        String information = sc.nextLine();
+        try {
+            ArrayList<String[]> meals = db.userSearchForDishInMerchant(s_id, information);
+            String[] VIS = {"id", "name", "price", "picture", "sort"};
+            System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "id", "name", "price", "picture", "sort");
+            for(String[] strings : meals){
+                dealMethod.printStr(strings, VIS);
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("An error occurred!");
+            e.printStackTrace();
+        }
+    }
+
+    public void showEvaluation(){
+        //TODO
+
     }
 
     public void collectMerchant(){
