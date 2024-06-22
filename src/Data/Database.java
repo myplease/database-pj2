@@ -46,7 +46,8 @@ public class Database {
         reader = new BufferedReader(new FileReader(new File("src/files/data/orders_initial_data.txt")));
         while ((line = reader.readLine())!=null){
             String[] argv = line.split(" ");
-            addData("orders",argv);
+            if(argv.length == Constant.ordersSchema.size()) addData("orders",argv);
+            else addDataByEntry("orders",new String[]{"id","date","time","uid","sid","is_online","state"},argv);
         }
         reader = new BufferedReader(new FileReader(new File("src/files/data/order_dish_initial_data.txt")));
         while ((line = reader.readLine())!=null){
@@ -256,7 +257,7 @@ public class Database {
             }
             case "user" -> {
                 schema = Constant.userSchema;
-                sqlStatement = "INSERT INTO user(name,gender,student_id,password) VALUES (?,?,?,?)";
+                sqlStatement = "INSERT INTO user(name,gender,student_id,age,job,password) VALUES (?,?,?,?,?,?)";
                 argc = schema.size() - 1;
             }
             case "dish" -> {
@@ -306,6 +307,46 @@ public class Database {
         if(statement.executeUpdate() >= 1) return true;
         else return false;
     }
+    public boolean addDataByEntry(String table,String[] entry,String[] argv) throws SQLException {
+        List<String> schema;
+        switch (table) {
+            case "merchant" -> schema = Constant.merchantSchema;
+            case "user" -> schema = Constant.userSchema;
+            case "dish" -> schema = Constant.dishSchema;
+            case "orders" -> schema = Constant.ordersSchema;
+            case "order_dish" -> schema = Constant.order_dishSchema;
+            case "like_merchant" -> schema = Constant.like_merchantSchema;
+            case "like_dish" -> schema = Constant.like_dishSchema;
+            case "message" -> schema = Constant.messageSchema;
+            default -> {
+                if (debug) System.err.println("addData err! Table: '" + table + "' do not exist!");
+                return false;
+            }
+        }
+        for (int i = 0; i < entry.length; i++) {
+            if(!schema.contains(entry[i])){
+                if (debug) System.err.println("addData err!");
+                return false;
+            }
+        }
+        String line = "INSERT INTO " + table + " (";
+        for (int i = 0; i < entry.length; i++) {
+            if(i != entry.length - 1)line+=entry[i]+",";
+            else line+=entry[i];
+        }
+        line += ") VALUES (";
+        for (int i = 0; i < entry.length; i++) {
+            if(i != entry.length - 1)line += "?,";
+            else line += "?";
+        }
+        line += ")";
+        PreparedStatement statement = connection.prepareStatement(line);
+        for (int i = 0; i < argv.length; i++) {
+            statement.setString(i+1,argv[i]);
+        }
+        if(statement.executeUpdate() >= 1) return true;
+        else return false;
+    }
     public String getUserIdByStudent_id(String student_id) throws SQLException {
         String line = "SELECT id FROM user WHERE student_id = ?";
         PreparedStatement statement = connection.prepareStatement(line);
@@ -322,8 +363,8 @@ public class Database {
         resultSet.next();
         return resultSet.getString("id");
     }
-    public boolean userRegister(String name,String gender,String student_id,String password) throws SQLException {
-        String[] argv = {name,gender,student_id,password};
+    public boolean userRegister(String name,String gender,String student_id,int age,String job,String password) throws SQLException {
+        String[] argv = {name,gender,student_id,Integer.toString(age),job,password};
         return addData("user",argv);
     }
     public boolean merchantRegister(String name,String address,String phone_number,String main_dish) throws SQLException {
@@ -540,7 +581,7 @@ public class Database {
         ResultSet resultSet = statement.executeQuery();
         String[] schema = {"id","name","price","picture","sort","score","online_num","offline_num"};
         return resultSetToList(resultSet,schema);
-    }
+    }//收藏量
     public ArrayList<String[]> userGetSaleNumOfDishFromLike(int uid) throws SQLException {
         String line = "WITH week_sale AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as week_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 WEEK GROUP BY fid)" +
                 ",month_sale AS( SELECT order_dish.fid as fid,sum(order_dish.number) as month_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 MONTH GROUP BY fid)"+
@@ -575,5 +616,7 @@ public class Database {
         String[] schema = {"fid","dish_name","dish_num"};
         return resultSetToList(resultSet,schema);
     }
-
+    //展示商户评价的函数
+    //展示商户的分类
+    //商户所有菜品的收藏量
 }
