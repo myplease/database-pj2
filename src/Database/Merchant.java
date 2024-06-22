@@ -1,6 +1,7 @@
 package Database;
 
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -74,30 +75,79 @@ public class Merchant {
     public void showMeal(){
         Scanner sc = new Scanner(System.in);
         try {
-            ArrayList<String[]> dealTemp = db.showDishOfMerchant(s_id);
-            System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "id", "name", "price", "picture", "sort");
-            String[] VIS = {"id", "name", "price", "picture", "sort"};
-            for(String[] d : dealTemp){
-                dealMethod.printStr(d, VIS);
-            }
-            System.out.println("Please input the deal_id to choose one meal to check the detail.(Exit for exit)");
-            String command = sc.nextLine();
-            if(command.equals("Exit")){
-                return;
-            }
-            else{
-                String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
-                    "score", "total_score", "score_count"};
-                System.out.printf("%-5s%-5s%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
-                        "nutrition", "allergen", "score", "total_score", "score_count");
-                ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(command));
-                for(String[] d : idsDealTemp){
-                    dealMethod.printStr(d, VisD);
+            String[] VIS = {"skip", "name", "price", "picture", "sort"};
+            ArrayList<String[]> mealLIST = db.showDishOfMerchant(s_id);
+            while(true){
+                int whichOne = 0;
+                System.out.println("Here's the meals.");
+                System.out.println("I'll show results in Pagination query.");
+                int endPage = (mealLIST.size() % 10 == 0) ?
+                        (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
+                System.out.println("There are " + endPage + " pages.");
+                while(true){
+                    System.out.println("Please enter the page you want to see.(Exit to exit)");
+                    String page = sc.nextLine();
+                    if(page.equals("Exit")){
+                        return;
+                    }
+                    if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
+                        System.out.println("Invalid page number, please try again.");
+                        continue;
+                    }
+                    int topF = Math.min(Integer.parseInt(page) * 10, mealLIST.size());
+                    ArrayList<String[]> dataPa = dealMethod.copyArrayList(mealLIST,
+                            Integer.parseInt(page) * 10 - 10,
+                            topF
+                    );
+                    System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                    int rawT = 0;
+                    for(String[] args : dataPa){
+                        System.out.printf("%-5s", rawT++);
+                        dealMethod.printStr(args, VIS);
+                    }
+                    System.out.println("You can choose a meal.");
+                    System.out.println("1 for query ahead. 2 for choose a meal. Else will exit.");
+                    String read = sc.nextLine();
+                    if(read.equals("1")){
+                        continue;
+                    }
+                    else if(read.equals("2")){
+                        System.out.println("Please enter the raw of the meal to see detailed information.(Exit for exit)");
+                        String raw = "";
+                        String id = "";
+                        while(true){
+                            raw = sc.nextLine();
+                            if(raw.equals("Exit")){
+                                return;
+                            }
+                            if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
+                                    || Integer.parseInt(raw) < 0){
+                                System.out.println("Invalid page number, please try again.");
+                                continue;
+                            }
+                            else{
+                                break;
+                            }
+                        }
+                        String[] VisD = {"skip", "skip", "name", "price", "picture", "sort", "nutrition", "allergen",
+                                "score", "total_score", "score_count"};
+                        System.out.printf("%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
+                                "nutrition", "allergen", "score", "total_score", "score_count");
+                        String idMeal = dataPa.get(Integer.parseInt(raw))[0];
+                        ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(idMeal));
+                        for(String[] d : idsDealTemp){
+                            dealMethod.printStr(d, VisD);
+                        }
+                    }
+                    else{
+                        return;
+                    }
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e){
             System.out.println("An error occurred!");
-            e.getStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -209,66 +259,122 @@ public class Merchant {
 
     public void changeMeal(){
         Scanner sc = new Scanner(System.in);
-        System.out.println("Please choose a meal.(Input a id)");
-        String meal_id = sc.nextLine();
         try {
-            System.out.printf("%-5s%-5s%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","id", "sid", "name", "price", "picture", "sort",
-                    "nutrition", "allergen", "score", "total_score", "score_count");
-            String[] VisD = {"id", "sid", "name", "price", "picture", "sort", "nutrition", "allergen",
-                    "score", "total_score", "score_count"};
-            ArrayList<String[]> mealInf = db.showDetailedInformationOfDish(Integer.parseInt(meal_id));
-            dealMethod.printStr(mealInf.getFirst(), VisD);
-        }
-        catch (SQLException e){
-            System.out.println("An error occurred.");
-        }
-        try {
+            String[] VIS = {"skip", "name", "price", "picture", "sort"};
+            ArrayList<String[]> mealLIST = db.showDishOfMerchant(s_id);
             while(true){
-                System.out.println("Here's the information about the meal.");
-                System.out.println("Which attribute do you want to change?(Capitalizes the first letter)");
-                System.out.println("PS:enter EXIT to exit.");
-                String attribute = sc.nextLine();
-                switch(attribute){
-                    case "Name":
-                        System.out.println("Please enter the new name.");
-                        String name = sc.nextLine();
-                        db.changeData("dish", new String[]{meal_id}, "name", name);
+                int whichOne = 0;
+                System.out.println("Here's the meals.");
+                System.out.println("I'll show results in Pagination query.");
+                int endPage = (mealLIST.size() % 10 == 0) ?
+                        (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
+                System.out.println("There are " + endPage + " pages.");
+                while(true){
+                    System.out.println("Please enter the page you want to see.(Exit to exit)");
+                    String page = sc.nextLine();
+                    if(page.equals("Exit")){
                         return;
-                    case "Price":
-                        System.out.println("Please enter the new price.");
-                        String price = sc.nextLine();
-                        db.changeData("dish", new String[]{meal_id}, "price", price);
+                    }
+                    if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
+                        System.out.println("Invalid page number, please try again.");
+                        continue;
+                    }
+                    int topF = Math.min(Integer.parseInt(page) * 10, mealLIST.size());
+                    ArrayList<String[]> dataPa = dealMethod.copyArrayList(mealLIST,
+                            Integer.parseInt(page) * 10 - 10,
+                            topF
+                    );
+                    System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                    int rawT = 0;
+                    for(String[] args : dataPa){
+                        System.out.printf("%-5s", rawT++);
+                        dealMethod.printStr(args, VIS);
+                    }
+                    System.out.println("You can choose a meal.");
+                    System.out.println("1 for query ahead. 2 for choose a meal. Else will exit.");
+                    String read = sc.nextLine();
+                    if(read.equals("1")){
+                        continue;
+                    }
+                    else if(read.equals("2")){
+                        System.out.println("Please enter the raw of the meal to see detailed information.(Exit for exit)");
+                        String raw = "";
+                        while(true){
+                            raw = sc.nextLine();
+                            if(raw.equals("Exit")){
+                                return;
+                            }
+                            if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
+                                    || Integer.parseInt(raw) < 0){
+                                System.out.println("Invalid page number, please try again.");
+                                continue;
+                            }
+                            else{
+                                break;
+                            }
+                        }
+                        String[] VisD = {"skip", "skip", "name", "price", "picture", "sort", "nutrition", "allergen",
+                                "score", "total_score", "score_count"};
+                        System.out.printf("%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
+                                "nutrition", "allergen", "score", "total_score", "score_count");
+                        String idMeal = dataPa.get(Integer.parseInt(raw))[0];
+                        ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(idMeal));
+                        for(String[] d : idsDealTemp){
+                            dealMethod.printStr(d, VisD);
+                        }
+                        while(true){
+                            System.out.println("Here's the information about the meal.");
+                            System.out.println("Which attribute do you want to change?(Capitalizes the first letter)");
+                            System.out.println("PS:enter EXIT to exit.");
+                            String attribute = sc.nextLine();
+                            switch(attribute){
+                                case "Name":
+                                    System.out.println("Please enter the new name.");
+                                    String name = sc.nextLine();
+                                    db.changeData("dish", new String[]{idMeal}, "name", name);
+                                    return;
+                                case "Price":
+                                    System.out.println("Please enter the new price.");
+                                    String price = sc.nextLine();
+                                    db.changeData("dish", new String[]{idMeal}, "price", price);
+                                    return;
+                                case "Picture":
+                                    System.out.println("Please enter the new picture.");
+                                    String picture = sc.nextLine();
+                                    db.changeData("dish", new String[]{idMeal}, "picture", picture);
+                                    return;
+                                case "Classification":
+                                    System.out.println("Please enter the new classification.");
+                                    String classification = sc.nextLine();
+                                    db.changeData("dish", new String[]{idMeal}, "sort", classification);
+                                    return;
+                                case "Nutrition":
+                                    System.out.println("Please enter the new nutrition.");
+                                    String nutrition = sc.nextLine();
+                                    db.changeData("dish", new String[]{idMeal}, "nutrition", nutrition);
+                                    return;
+                                case "Allergen":
+                                    System.out.println("Please enter the new allergen.");
+                                    String allergen = sc.nextLine();
+                                    db.changeData("dish", new String[]{idMeal}, "allergen", allergen);
+                                    return;
+                                case "EXIT":
+                                    return;
+                                default:
+                                    System.out.println("Input error!");
+                                    break;
+                            }
+                        }
+                    }
+                    else{
                         return;
-                    case "Picture":
-                        System.out.println("Please enter the new picture.");
-                        String picture = sc.nextLine();
-                        db.changeData("dish", new String[]{meal_id}, "picture", picture);
-                        return;
-                    case "Classification":
-                        System.out.println("Please enter the new classification.");
-                        String classification = sc.nextLine();
-                        db.changeData("dish", new String[]{meal_id}, "sort", classification);
-                        return;
-                    case "Nutrition":
-                        System.out.println("Please enter the new nutrition.");
-                        String nutrition = sc.nextLine();
-                        db.changeData("dish", new String[]{meal_id}, "nutrition", nutrition);
-                        return;
-                    case "Allergen":
-                        System.out.println("Please enter the new allergen.");
-                        String allergen = sc.nextLine();
-                        db.changeData("dish", new String[]{meal_id}, "allergen", allergen);
-                        return;
-                    case "EXIT":
-                        return;
-                    default:
-                        System.out.println("Input error!");
-                        break;
+                    }
                 }
             }
         }
         catch (SQLException e){
-            System.out.println("An error occurred.");
+            System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 

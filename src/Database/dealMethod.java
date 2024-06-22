@@ -39,6 +39,14 @@ public class dealMethod {
         System.out.println();
     }
 
+    public static ArrayList<String[]> copyArrayList(ArrayList<String[]> listB, int begin, int end){
+        ArrayList<String[]> listA = new ArrayList<>();
+        for(int i = begin; i < end; i++){
+            listA.add(listB.get(i));
+        }
+        return listA;
+    }
+
     public static String[] getID(ArrayList<String[]> list){
         String[] ids = new String[list.size()];
         for (int i = 0; i < list.size(); i++) {
