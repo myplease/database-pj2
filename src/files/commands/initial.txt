@@ -9,10 +9,13 @@ create table order_dish(bid int,fid int,number int,score int,primary key (bid,fi
 create table like_merchant(uid int,sid int,primary key (uid,sid));
 create table like_dish(uid int,fid int,primary key (uid,fid));
 create table message(id int primary key auto_increment,uid int,is_read TINYINT(1),date date,time time,text varchar(256));
+create table price_history(fid int,date date,time time,price int,primary key (fid,date,time));
 CREATE TRIGGER update_avg_score BEFORE UPDATE ON dish FOR EACH ROW BEGIN     IF NEW.score_count <> 0 THEN         SET NEW.score = NEW.total_score / NEW.score_count;     ELSE         SET NEW.score = 0;     END IF; END;
 CREATE TRIGGER update_total_score AFTER UPDATE ON order_dish FOR EACH ROW BEGIN     DECLARE old_score INT;     DECLARE new_score INT;     DECLARE dish_id INT;     SELECT OLD.score, NEW.score, fid INTO old_score, new_score, dish_id FROM order_dish WHERE bid = NEW.bid;     UPDATE dish SET total_score = total_score - old_score + new_score, score_count = CASE WHEN old_score = 0 THEN score_count + 1 ELSE score_count END WHERE id = dish_id; END;
 CREATE TRIGGER send_message_on_state_change AFTER UPDATE ON orders FOR EACH ROW BEGIN     IF OLD.state <> 1 AND NEW.state = 1 THEN         INSERT INTO message (uid, is_read, date, time, text)         VALUES (NEW.uid, 0, CURDATE(), CURTIME(), 'The dish is ready');     END IF; END;
 CREATE TRIGGER send_message_on_order_creation AFTER INSERT ON orders FOR EACH ROW BEGIN     INSERT INTO message (uid, is_read, date, time, text)     VALUES (NEW.uid, 0, CURDATE(), CURTIME(), 'Order dish success!'); END;
+CREATE TRIGGER insert_dish_update_price AFTER INSERT ON dish FOR EACH ROW BEGIN     INSERT INTO price_history (fid, date, time, price)     VALUES (NEW.id, CURDATE(), CURTIME(), NEW.price); END;
+CREATE TRIGGER update_price AFTER UPDATE ON dish FOR EACH ROW BEGIN     IF OLD.price <> NEW.price THEN         INSERT INTO price_history (fid, date, time, price)         VALUES (NEW.id, CURDATE(), CURTIME(), NEW.price);     END IF; END;
 ALTER TABLE dish ADD CONSTRAINT sid_in_dish FOREIGN KEY (sid) REFERENCES merchant(id);
 ALTER TABLE orders ADD CONSTRAINT sid_in_orders FOREIGN KEY (sid) REFERENCES merchant(id);
 ALTER TABLE like_merchant ADD CONSTRAINT sid_in_like_merchant FOREIGN KEY (sid) REFERENCES merchant(id);
@@ -23,3 +26,4 @@ ALTER TABLE order_dish ADD CONSTRAINT bid_in_order_dish FOREIGN KEY (bid) REFERE
 ALTER TABLE order_dish ADD CONSTRAINT fid_in_order_dish FOREIGN KEY (fid) REFERENCES dish(id);
 ALTER TABLE like_dish ADD CONSTRAINT fid_in_like_dish FOREIGN KEY (fid) REFERENCES dish(id);
 ALTER TABLE message ADD CONSTRAINT uid_in_message FOREIGN KEY (uid) REFERENCES user(id);
+ALTER TABLE price_history ADD CONSTRAINT fid_in_price_history FOREIGN KEY (fid) REFERENCES dish(id);

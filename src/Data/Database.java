@@ -529,6 +529,14 @@ public class Database {
         }
         return true;
     }
+    public ArrayList<String[]> userShowPriceHistory(int fid) throws SQLException {
+        String line = "SELECT date,time,price FROM price_history WHERE price_history.fid = ?";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,fid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"date","time","price"};
+        return resultSetToList(resultSet,schema);
+    }
     public ArrayList<String[]> showDishOfMerchant(int sid) throws SQLException {
         String line = "SELECT id,name,price,picture,sort FROM dish WHERE sid = ? ORDER BY sort";
         PreparedStatement statement = connection.prepareStatement(line);
@@ -735,5 +743,4 @@ public class Database {
         String[] schema = {"no_score_count","1_count","2_count","3_count","4_count","5_count","total_count"};
         return resultSetToList(resultSet,schema);
     }
-
 }
