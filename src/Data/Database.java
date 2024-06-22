@@ -217,7 +217,7 @@ public class Database {
             }
         }
         if(!schema.contains(entry)) {
-            System.err.println("Select err! Table: '" + table + "' do not have property '" + entry +"' ");
+            if(debug)System.err.println("Select err! Table: '" + table + "' do not have property '" + entry +"' ");
             return null;
         }
         for (int i = 0; i < argv.length; i++) {
@@ -380,7 +380,7 @@ public class Database {
         return changeData("dish",argv,"price",Integer.toString(price));
     }
     public boolean merchantChangeSort(int fid,String sort) throws SQLException {
-        String[] argv = {sort};
+        String[] argv = {Integer.toString(fid)};
         return changeData("dish",argv,"sort",sort);
     }
     public ArrayList<String[]> merchantGetOrder(int sid) throws SQLException {
@@ -630,4 +630,110 @@ public class Database {
         String[] schema = {"bid","date","time","comment"};
         return resultSetToList(resultSet,schema);
     }
+    public ArrayList<String[]> showOrderNumOfTime(String time) throws SQLException {
+        int day_num;
+        switch (time){
+            case "DAY"->day_num = 1;
+            case "WEEK"->day_num = 7;
+            case "MONTH"->day_num = 30;
+            case "YEAR"->day_num = 365;
+            default -> {
+                return null;
+            }
+        }
+        String line = "SELECT SUM(CASE WHEN DATEDIFF(CURDATE(), date) <= ? THEN 1 ELSE 0 END) AS within_1_"+time+"," +
+                "SUM(CASE WHEN DATEDIFF(CURDATE(), date) > ? AND DATEDIFF(CURDATE(), date) <= ? THEN 1 ELSE 0 END) AS between_1_and_2_"+time+"," +
+                "SUM(CASE WHEN DATEDIFF(CURDATE(), date) > ? AND DATEDIFF(CURDATE(), date) <= ? THEN 1 ELSE 0 END) AS between_2_and_3_"+time+"," +
+                "SUM(CASE WHEN DATEDIFF(CURDATE(), date) > ? AND DATEDIFF(CURDATE(), date) <= ? THEN 1 ELSE 0 END) AS between_3_and_4_"+time+"," +
+                "SUM(CASE WHEN DATEDIFF(CURDATE(), date) > ? AND DATEDIFF(CURDATE(), date) <= ? THEN 1 ELSE 0 END) AS between_4_and_5_"+time+" " +
+                "FROM orders";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,day_num);
+        statement.setInt(2,day_num);
+        statement.setInt(3,day_num*2);
+        statement.setInt(4,day_num*2);
+        statement.setInt(5,day_num*3);
+        statement.setInt(6,day_num*3);
+        statement.setInt(7,day_num*4);
+        statement.setInt(8,day_num*4);
+        statement.setInt(9,day_num*5);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"within_1_" + time,"between_1_and_2_" + time,"between_2_and_3_" + time,"between_3_and_4_" + time,"between_4_and_5_" + time};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showOrderNumOfDayTime() throws SQLException {
+        String line = "SELECT SUM(CASE WHEN TIME(time) >= '06:00:00' AND TIME(time) < '12:00:00' THEN 1 ELSE 0 END) AS morning," +
+                "SUM(CASE WHEN TIME(time) >= '12:00:00' AND TIME(time) < '18:00:00' THEN 1 ELSE 0 END) AS afternoon," +
+                "SUM(CASE WHEN TIME(time) >= '18:00:00' AND TIME(time) < '24:00:00' THEN 1 ELSE 0 END) AS evening," +
+                "SUM(CASE WHEN TIME(time) >= '00:00:00' AND TIME(time) < '06:00:00' THEN 1 ELSE 0 END) AS night " +
+                "FROM orders";
+        PreparedStatement statement = connection.prepareStatement(line);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"morning","afternoon","evening","night"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showOrderNumOfFeatureGroup(String entry,String value) throws SQLException {
+        if(!Constant.userSchema.contains(entry)){
+            if(debug)System.err.println("in showOrderNumOfFeatureGroup(),user do not have" + entry);
+            return null;
+        }
+        String line = "WITH featured_user AS ( SELECT * FROM user WHERE "+entry+" = ?) ";
+        line += "SELECT sid,merchant.name as merchant_name,count(orders.id) as order_num FROM featured_user JOIN orders ON featured_user.id = orders.uid JOIN merchant ON orders.sid = merchant.id GROUP BY sid,merchant_name";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,value);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"sid","merchant_name","order_num"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showOrderNumOfFeatureGroupOfDishFromMerchant(int sid,String entry,String value) throws SQLException {
+        if(!Constant.userSchema.contains(entry)){
+            if(debug)System.err.println("in showOrderNumOfFeatureGroupOfDishFromMerchant(),user do not have" + entry);
+            return null;
+        }
+        String line = "WITH featured_user AS ( SELECT * FROM user WHERE "+entry+" = ?) ";
+        line += "SELECT order_dish.fid as fid,dish.name as dish_name,sum(order_dish.number) as order_num FROM featured_user JOIN orders ON featured_user.id = orders.uid JOIN order_dish ON orders.id = order_dish.bid JOIN dish ON dish.id = order_dish.fid WHERE orders.sid = ? AND dish.sid = ? GROUP BY fid,dish_name";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,value);
+        statement.setInt(2,sid);
+        statement.setInt(3,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"fid","dish_name","order_num"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showCommentNumOfFeatureGroup(String entry,String value) throws SQLException {
+        if(!Constant.userSchema.contains(entry)){
+            if(debug)System.err.println("in showCommentNumOfFeatureGroup(),user do not have" + entry);
+            return null;
+        }
+        String line = "WITH featured_user AS ( SELECT * FROM user WHERE "+entry+" = ?) " +
+                "SELECT SUM(CASE WHEN comment IS NOT NULL THEN 1 ELSE 0 END) AS comment_count," +
+                "count(orders.id) AS order_count "+
+                "FROM orders JOIN featured_user ON orders.uid = featured_user.id";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,value);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"comment_count","order_count"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showScoreNumOfFeatureGroup(String entry,String value) throws SQLException {
+        if(!Constant.userSchema.contains(entry)){
+            if(debug)System.err.println("in showScoreNumOfFeatureGroup(),user do not have" + entry);
+            return null;
+        }
+        String line = "WITH featured_user AS ( SELECT * FROM user WHERE "+entry+" = ?) " +
+                "SELECT SUM(CASE WHEN order_dish.score = 0 THEN 1 ELSE 0 END) AS no_score_count," +
+                "SUM(CASE WHEN order_dish.score = 1 THEN 1 ELSE 0 END) AS 1_count," +
+                "SUM(CASE WHEN order_dish.score = 2 THEN 1 ELSE 0 END) AS 2_count," +
+                "SUM(CASE WHEN order_dish.score = 3 THEN 1 ELSE 0 END) AS 3_count," +
+                "SUM(CASE WHEN order_dish.score = 4 THEN 1 ELSE 0 END) AS 4_count," +
+                "SUM(CASE WHEN order_dish.score = 5 THEN 1 ELSE 0 END) AS 5_count," +
+                "count(*) AS total_count "+
+                "FROM orders JOIN featured_user ON orders.uid = featured_user.id JOIN order_dish ON orders.id = order_dish.bid";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setString(1,value);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"no_score_count","1_count","2_count","3_count","4_count","5_count","total_count"};
+        return resultSetToList(resultSet,schema);
+    }
+
 }
