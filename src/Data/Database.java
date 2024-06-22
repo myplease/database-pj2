@@ -46,8 +46,8 @@ public class Database {
         reader = new BufferedReader(new FileReader(new File("src/files/data/orders_initial_data.txt")));
         while ((line = reader.readLine())!=null){
             String[] argv = line.split(" ");
-            if(argv.length == Constant.ordersSchema.size()) addData("orders",argv);
-            else addDataByEntry("orders",new String[]{"id","date","time","uid","sid","is_online","state"},argv);
+            if(argv.length == Constant.ordersSchema.size() - 1) addData("orders",argv);
+            else addDataByEntry("orders",new String[]{"date","time","uid","sid","is_online","state"},argv);
         }
         reader = new BufferedReader(new FileReader(new File("src/files/data/order_dish_initial_data.txt")));
         while ((line = reader.readLine())!=null){
@@ -379,6 +379,10 @@ public class Database {
         String[] argv = {Integer.toString(fid)};
         return changeData("dish",argv,"price",Integer.toString(price));
     }
+    public boolean merchantChangeSort(int fid,String sort) throws SQLException {
+        String[] argv = {sort};
+        return changeData("dish",argv,"sort",sort);
+    }
     public ArrayList<String[]> merchantGetOrder(int sid) throws SQLException {
         String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
@@ -573,13 +577,15 @@ public class Database {
     public ArrayList<String[]> getAvgScoreAndSaleOfDishFromMerchant(int sid) throws SQLException {
         String line = "WITH online_sale_num AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as online_num FROM dish JOIN order_dish JOIN orders ON dish.id = order_dish.fid AND order_dish.bid = orders.id WHERE dish.sid = ? AND orders.is_online = 1 GROUP BY fid)" +
                 ",offline_sale_num AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as offline_num FROM dish JOIN order_dish JOIN orders ON dish.id = order_dish.fid AND order_dish.bid = orders.id WHERE dish.sid = ? AND orders.is_online = 0 GROUP BY fid)"+
-        "SELECT id,name,price,picture,sort,dish.score as score,online_num,offline_num FROM dish LEFT JOIN online_sale_num ON dish.id = online_sale_num.fid LEFT JOIN offline_sale_num ON dish.id = offline_sale_num.fid WHERE dish.sid = ?";
+                ",like_num AS ( SELECT dish.id as fid,count(like_dish.uid) as num FROM dish JOIN like_dish ON dish.id = like_dish.fid WHERE dish.id = ? GROUP BY fid)"+
+        "SELECT id,name,price,picture,sort,dish.score as score,online_num,offline_num,num as like_num FROM dish LEFT JOIN online_sale_num ON dish.id = online_sale_num.fid LEFT JOIN offline_sale_num ON dish.id = offline_sale_num.fid LEFT JOIN like_num ON dish.id = like_num.fid WHERE dish.sid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         statement.setInt(2,sid);
         statement.setInt(3,sid);
+        statement.setInt(4,sid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"id","name","price","picture","sort","score","online_num","offline_num"};
+        String[] schema = {"id","name","price","picture","sort","score","online_num","offline_num","like_num"};
         return resultSetToList(resultSet,schema);
     }//收藏量
     public ArrayList<String[]> userGetSaleNumOfDishFromLike(int uid) throws SQLException {
@@ -616,7 +622,12 @@ public class Database {
         String[] schema = {"fid","dish_name","dish_num"};
         return resultSetToList(resultSet,schema);
     }
-    //展示商户评价的函数
-    //展示商户的分类
-    //商户所有菜品的收藏量
+    public ArrayList<String[]> showCommentOnMerchant(int sid) throws SQLException {
+        String line = "SELECT id as bid,date,time,comment FROM orders WHERE orders.sid = ? AND orders.comment IS NOT null ORDER BY date,time";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,sid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"bid","date","time","comment"};
+        return resultSetToList(resultSet,schema);
+    }
 }
