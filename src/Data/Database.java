@@ -384,16 +384,16 @@ public class Database {
         return changeData("dish",argv,"sort",sort);
     }
     public ArrayList<String[]> merchantGetOrder(int sid) throws SQLException {
-        String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ?";
+        String line = "SELECT bid,fid,date,time,is_online,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ? AND state = 0";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"bid","fid","date","time","is_online","state","name"};
+        String[] schema = {"bid","fid","date","time","is_online","name"};
         return resultSetToList(resultSet,schema);
     }
     public boolean merchantOrderReady(int bid) throws SQLException {
         String[] argv = {Integer.toString(bid)};
-        return changeData("order",argv,"state",Integer.toString(1));
+        return changeData("orders",argv,"state",Integer.toString(1));
     }
     public ArrayList<String[]> getUserInformation(int id) throws SQLException {
         String line = "SELECT * FROM user WHERE id = ?";

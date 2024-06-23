@@ -74,22 +74,26 @@ public class Initial {
                         " " + ((i*j % Constant.initialMerchantNumber)+1) +
                         " 0" +
                         " 0";
-                if (i != Constant.initialMerchantNumber - 1 || j != Constant.initialOrderNumberEachUser - 1) line += "\n";
+                if (i != Constant.initialUserNumber - 1 || j != Constant.initialOrderNumberEachUser - 1) line += "\n";
                 writer.write(line);
             }
         }
         writer.close();
     }
     public static void initialLikeDish() throws IOException {
+        //uid fid
         String line;
         BufferedWriter writer = new BufferedWriter(new FileWriter("src/files/data/like_dish_initial_data.txt"));
-        line = "1 1\n" +
-                "1 2\n" +
-                "1 3\n" +
-                "1 5\n" +
-                "2 1\n" +
-                "2 2";
-        writer.write(line);
+        for (int i = 0; i < Constant.initialUserNumber; i++) {
+            for (int j = 0; j < Constant.initialLikeDishNumberEachUser; j++) {
+                int I = i+1;
+                int J = j+1;
+                line = "" + I +
+                        " " + ((i*j % Constant.initialDishNumberEachMerchant*Constant.initialMerchantNumber)+1);
+                if (i != Constant.initialUserNumber - 1 || j != Constant.initialLikeDishNumberEachUser - 1) line += "\n";
+                writer.write(line);
+            }
+        }
         writer.close();
     }
     public static void initialLikeMerchant() throws IOException {
@@ -97,7 +101,16 @@ public class Initial {
         BufferedWriter writer = new BufferedWriter(new FileWriter("src/files/data/merchant_initial_data.txt"));
         line = "1 1\n" +
                 "2 1";
-        writer.write(line);
+        for (int i = 0; i < Constant.initialUserNumber; i++) {
+            for (int j = 0; j < Constant.initialLikeMerchantNumberEachUser; j++) {
+                int I = i+1;
+                int J = j+1;
+                line = "" + I +
+                        " " + ((i*j % Constant.initialMerchantNumber)+1);
+                if (i != Constant.initialUserNumber - 1 || j != Constant.initialLikeMerchantNumberEachUser - 1) line += "\n";
+                writer.write(line);
+            }
+        }
         writer.close();
     }
     public static void initialOrderDish() throws IOException {
