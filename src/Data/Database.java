@@ -384,11 +384,11 @@ public class Database {
         return changeData("dish",argv,"sort",sort);
     }
     public ArrayList<String[]> merchantGetOrder(int sid) throws SQLException {
-        String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ?";
+        String line = "SELECT bid,fid,date,time,is_online,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ? AND state = 0";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         ResultSet resultSet = statement.executeQuery();
-        String[] schema = {"bid","fid","date","time","is_online","state","name"};
+        String[] schema = {"bid","fid","date","time","is_online","name"};
         return resultSetToList(resultSet,schema);
     }
     public boolean merchantOrderReady(int bid) throws SQLException {
@@ -510,6 +510,12 @@ public class Database {
     }
     public boolean userPutScoreOnOrderDish(int bid,int fid,int score) throws SQLException {//score should be [1,5]
         String[] argv = {Integer.toString(bid),Integer.toString(fid)};
+        String line = "SELECT * FROM order_dish WHERE bid = ? AND fid = ? AND score = 0";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,bid);
+        statement.setInt(2,fid);
+        ResultSet resultSet = statement.executeQuery();
+        if(!resultSet.next()) return false;
         return changeData("order_dish",argv,"score",Integer.toString(score));
     }
     public boolean userOrderDish(int uid,int sid,int[] fid,int[] num,boolean is_online) throws SQLException {
@@ -597,13 +603,16 @@ public class Database {
         String[] schema = {"id","name","price","picture","sort","score","online_num","offline_num","like_num"};
         return resultSetToList(resultSet,schema);
     }//收藏量
-    public ArrayList<String[]> userGetSaleNumOfDishFromLike(int uid) throws SQLException {
-        String line = "WITH week_sale AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as week_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 WEEK GROUP BY fid)" +
-                ",month_sale AS( SELECT order_dish.fid as fid,sum(order_dish.number) as month_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 MONTH GROUP BY fid)"+
-                ",year_sale AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as year_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 YEAR GROUP BY fid)"+
-                "SELECT dish.id as fid,name,week_sale_num,month_sale_num,year_sale_num FROM dish JOIN like_dish JOIN week_sale JOIN month_sale JOIN year_sale ON dish.id = like_dish.fid AND week_sale.fid = dish.id AND month_sale.fid = dish.id AND year_sale.fid = dish.id WHERE like_dish.uid = ?";
+    public ArrayList<String[]> userGetSaleNumOfDishFromLike(int uid, boolean is_online) throws SQLException {
+        String line = "WITH week_sale AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as week_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 WEEK AND orders.is_online = ? GROUP BY fid)" +
+                ",month_sale AS( SELECT order_dish.fid as fid,sum(order_dish.number) as month_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 MONTH AND orders.is_online = ? GROUP BY fid)"+
+                ",year_sale AS ( SELECT order_dish.fid as fid,sum(order_dish.number) as year_sale_num FROM orders JOIN order_dish ON orders.id = order_dish.bid WHERE TIMESTAMP(date, time) >= NOW() - INTERVAL 1 YEAR AND orders.is_online = ? GROUP BY fid)"+
+                "SELECT dish.id as fid,name,week_sale_num,month_sale_num,year_sale_num FROM dish JOIN like_dish ON dish.id = like_dish.fid LEFT JOIN week_sale ON week_sale.fid = dish.id LEFT JOIN month_sale ON month_sale.fid = dish.id LEFT JOIN year_sale ON year_sale.fid = dish.id WHERE like_dish.uid = ?";
         PreparedStatement statement = connection.prepareStatement(line);
-        statement.setInt(1,uid);
+        statement.setInt(1,is_online?1:0);
+        statement.setInt(2,is_online?1:0);
+        statement.setInt(3,is_online?1:0);
+        statement.setInt(4,uid);
         ResultSet resultSet = statement.executeQuery();
         String[] schema = {"fid","name","week_sale_num","month_sale_num","year_sale_num"};
         return resultSetToList(resultSet,schema);
