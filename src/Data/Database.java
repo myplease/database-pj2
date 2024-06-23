@@ -393,7 +393,7 @@ public class Database {
     }
     public boolean merchantOrderReady(int bid) throws SQLException {
         String[] argv = {Integer.toString(bid)};
-        return changeData("order",argv,"state",Integer.toString(1));
+        return changeData("orders",argv,"state",Integer.toString(1));
     }
     public ArrayList<String[]> getUserInformation(int id) throws SQLException {
         String line = "SELECT * FROM user WHERE id = ?";

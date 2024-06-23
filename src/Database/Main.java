@@ -7,7 +7,6 @@ import Data.Database;
 public class Main {
     public static void main(String[] args) throws Exception {
         Database db = new Database("root", "lw456456");
-
         Scanner sc = new Scanner(System.in);
         while(true){
             System.out.println("Please enter the operator!");

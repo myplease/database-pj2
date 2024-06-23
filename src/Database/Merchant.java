@@ -31,7 +31,7 @@ public class Merchant {
                     flag = LoginOrRegister(choose, username, password);
                     break;
                 default:
-                    break;
+                    return;
             }
             if(flag == 0){
                 break;
@@ -48,6 +48,7 @@ public class Merchant {
                     System.out.println("ChangeMeal: change the meal.");
                     System.out.println("AddMeal: add your meal.");
                     System.out.println("Meal: show your meals.");
+                    System.out.println("Order: show your orders.");
                     break;
                 case "Show":
                     showInf();
@@ -66,9 +67,91 @@ public class Merchant {
                 case "Meal":
                     showMeal();
                     break;
+                case "Order":
+                    order();
+                    break;
                 default:
+                    System.out.println("Input error. Please try again.");
                     break;
             }
+        }
+    }
+
+    public void order(){
+        Scanner sc = new Scanner(System.in);
+        try {
+            ArrayList<String[]> informationM = db.merchantGetOrder(s_id);
+            String[] VIS = {"skip", "skip", "date", "time", "is_online", "name"};
+            System.out.println("I'll show results in Pagination query.");
+            int endPage = (informationM.size() % 10 == 0) ?
+                    (Math.max(1, informationM.size() / 10)) : (informationM.size() / 10 + 1);
+            System.out.println("There are " + endPage + " pages.");
+            while(true) {
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if (page.equals("Exit")) {
+                    return;
+                }
+                if(dealMethod.judgePageValue(page) == 0){
+                    System.out.println("Your input is invalid. Please try again.");
+                    continue;
+                }
+                if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, informationM.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(informationM,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                System.out.printf("%-5s%-15s%-15s%-10s%-15s%n",
+                        "raw", "date", "time", "is_online", "name");
+                int rawT = 0;
+                for (String[] args : dataPa) {
+                    System.out.printf("%-5s", rawT++);
+                    dealMethod.printStr(args, VIS);
+                }
+                System.out.println("You can choose a order.");
+                System.out.println("1 for query ahead. 2 for choose a order. Else for exit");
+                String choice = sc.nextLine();
+                if(choice.equals("1")){
+                    continue;
+                }
+                else if(choice.equals("2")){
+                    System.out.println("You can make a order ready.");
+                    System.out.println("Please input the raw to choose order.");
+                    String raw = "";
+                    while(true){
+                        raw = sc.nextLine();
+                        if(raw.equals("Exit")){
+                            return;
+                        }
+                        if(dealMethod.judgeRawValue(raw) == 0){
+                            System.out.println("Your input is invalid. Please try again.");
+                            continue;
+                        }
+                        if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
+                                || Integer.parseInt(raw) < 0){
+                            System.out.println("Invalid page number, please try again.");
+                            continue;
+                        }
+                        else{
+                            break;
+                        }
+                    }
+                    String idMeal = dataPa.get(Integer.parseInt(raw))[0];
+                    db.merchantOrderReady(Integer.parseInt(idMeal));
+                    break;
+                }
+                else{
+                    return;
+                }
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -77,71 +160,73 @@ public class Merchant {
         try {
             String[] VIS = {"skip", "name", "price", "picture", "sort"};
             ArrayList<String[]> mealLIST = db.showDishOfMerchant(s_id);
+            int whichOne = 0;
+            System.out.println("Here's the meals.");
+            System.out.println("I'll show results in Pagination query.");
+            int endPage = (mealLIST.size() % 10 == 0) ?
+                    (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
+            System.out.println("There are " + endPage + " pages.");
             while(true){
-                int whichOne = 0;
-                System.out.println("Here's the meals.");
-                System.out.println("I'll show results in Pagination query.");
-                int endPage = (mealLIST.size() % 10 == 0) ?
-                        (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
-                System.out.println("There are " + endPage + " pages.");
-                while(true){
-                    System.out.println("Please enter the page you want to see.(Exit to exit)");
-                    String page = sc.nextLine();
-                    if(page.equals("Exit")){
-                        return;
-                    }
-                    if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
-                        System.out.println("Invalid page number, please try again.");
-                        continue;
-                    }
-                    int topF = Math.min(Integer.parseInt(page) * 10, mealLIST.size());
-                    ArrayList<String[]> dataPa = dealMethod.copyArrayList(mealLIST,
-                            Integer.parseInt(page) * 10 - 10,
-                            topF
-                    );
-                    System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
-                    int rawT = 0;
-                    for(String[] args : dataPa){
-                        System.out.printf("%-5s", rawT++);
-                        dealMethod.printStr(args, VIS);
-                    }
-                    System.out.println("You can choose a meal.");
-                    System.out.println("1 for query ahead. 2 for choose a meal. Else will exit.");
-                    String read = sc.nextLine();
-                    if(read.equals("1")){
-                        continue;
-                    }
-                    else if(read.equals("2")){
-                        System.out.println("Please enter the raw of the meal to see detailed information.(Exit for exit)");
-                        String raw = "";
-                        String id = "";
-                        while(true){
-                            raw = sc.nextLine();
-                            if(raw.equals("Exit")){
-                                return;
-                            }
-                            if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
-                                    || Integer.parseInt(raw) < 0){
-                                System.out.println("Invalid page number, please try again.");
-                                continue;
-                            }
-                            else{
-                                break;
-                            }
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if(page.equals("Exit")){
+                    return;
+                }
+                if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, mealLIST.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(mealLIST,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                int rawT = 0;
+                for(String[] args : dataPa){
+                    System.out.printf("%-5s", rawT++);
+                    dealMethod.printStr(args, VIS);
+                }
+                System.out.println("You can choose a meal.");
+                System.out.println("1 for query ahead. 2 for choose a meal. Else will exit.");
+                String read = sc.nextLine();
+                if(read.equals("1")){
+                    continue;
+                }
+                else if(read.equals("2")){
+                    System.out.println("Please enter the raw of the meal to see detailed information.(Exit for exit)");
+                    String raw = "";
+                    String id = "";
+                    while(true){
+                        raw = sc.nextLine();
+                        if(raw.equals("Exit")){
+                            return;
                         }
-                        String[] VisD = {"skip", "skip", "name", "price", "picture", "sort", "nutrition", "allergen",
-                                "score", "total_score", "score_count"};
-                        System.out.printf("%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
-                                "nutrition", "allergen", "score", "total_score", "score_count");
-                        String idMeal = dataPa.get(Integer.parseInt(raw))[0];
-                        ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(idMeal));
-                        for(String[] d : idsDealTemp){
-                            dealMethod.printStr(d, VisD);
+                        if(dealMethod.judgeRawValue(raw) == 0){
+                            System.out.println("Your input is invalid. Please try again.");
+                            continue;
+                        }
+                        if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
+                                || Integer.parseInt(raw) < 0){
+                            System.out.println("Invalid page number, please try again.");
+                            continue;
+                        }
+                        else{
+                            break;
                         }
                     }
-                    else{
-                        return;
+                    String[] VisD = {"skip", "skip", "name", "price", "picture", "sort", "nutrition", "allergen",
+                            "score", "total_score", "score_count"};
+                    System.out.printf("%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
+                            "nutrition", "allergen", "score", "total_score", "score_count");
+                    String idMeal = dataPa.get(Integer.parseInt(raw))[0];
+                    ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(idMeal));
+                    for(String[] d : idsDealTemp){
+                        dealMethod.printStr(d, VisD);
                     }
+                }
+                else{
+                    return;
                 }
             }
         }
@@ -275,6 +360,10 @@ public class Merchant {
                     if(page.equals("Exit")){
                         return;
                     }
+                    if(dealMethod.judgePageValue(page) == 0){
+                        System.out.println("Your input is invalid. Please try again.");
+                        continue;
+                    }
                     if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
                         System.out.println("Invalid page number, please try again.");
                         continue;
@@ -303,6 +392,10 @@ public class Merchant {
                             raw = sc.nextLine();
                             if(raw.equals("Exit")){
                                 return;
+                            }
+                            if(dealMethod.judgeRawValue(raw) == 0){
+                                System.out.println("Your input is invalid. Please try again.");
+                                continue;
                             }
                             if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
                                     || Integer.parseInt(raw) < 0){

@@ -6,6 +6,13 @@ public class dealMethod {
     public static void printStr(String[] list, String[] vis){
         int cmp = 0;
         for (String s : list) {
+            if(s == null && vis[cmp].equals("comment")){
+                s = "No text.";
+            }
+            else if(s == null){
+                s = "0";
+            }
+
             switch(vis[cmp]){
                 case "id" -> System.out.printf("%-5s", s);
                 case "name" -> System.out.printf("%-15s", s);
@@ -29,6 +36,14 @@ public class dealMethod {
                 case "status" -> System.out.printf("%-10s", s);
                 case "state" -> System.out.printf("%-10s", s);
                 case "text" -> System.out.printf("%-256s", s);
+                case "age" -> System.out.printf("%-5s", s);
+                case "job" -> System.out.printf("%-10s", s);
+                case "comment" -> System.out.printf("%-256s", s);
+                case "online_num" -> System.out.printf("%-15s", s);
+                case "offline_num" -> System.out.printf("%-15s", s);
+                case "like_num" -> System.out.printf("%-15s", s);
+                case "dish_name" -> System.out.printf("%-15s", s);
+                case "user_name" -> System.out.printf("%-15s", s);
                 case "password" -> {}
                 case "skip" -> {}
                 default -> System.out.printf("%-5s", s);
@@ -53,5 +68,21 @@ public class dealMethod {
             ids[i] = list.get(i)[0];
         }
         return ids;
+    }
+
+    public static int judgeRawValue(String s){
+        return switch (s) {
+            case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" -> 1;
+            default -> 0;
+        };
+    }
+
+    public static int judgePageValue(String s){
+        for(int i = 0; i < s.length(); i++){
+            if(judgeRawValue(String.valueOf(s.charAt(i))) == 0){
+                return 0;
+            }
+        }
+        return 1;
     }
 }
