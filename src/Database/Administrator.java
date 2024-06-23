@@ -2,6 +2,7 @@ package Database;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import static java.lang.Integer.parseInt;
@@ -37,6 +38,7 @@ public class Administrator {
                     System.out.println("Change: change any table.");
                     System.out.println("Query: query any table.");
                     System.out.println("Home: return to the main interface.");
+                    System.out.println("AnalyseUser: show the activity level of users.");
                     break;
                 case "Add":
                     add();
@@ -52,10 +54,96 @@ public class Administrator {
                     break;
                 case "Home":
                     return;
+                case "AnalyseUser":
+                    analyseUser();
+                    break;
                 default:
                     System.out.println("Input error!");
                     break;
             }
+        }
+    }
+
+    public void analyseUser(){
+        Scanner sc = new Scanner(System.in);
+        System.out.println("What do you want to see?");
+        System.out.println("1 for Day. 2 for Week. 3 for Month. 4 for Year. 5 for detailed of a day. else for exit");
+        try {
+            while(true){
+                ArrayList<String[]> informationD = new ArrayList<>();
+                String[] VIS = new String[]{};
+                String option = sc.nextLine();
+                switch(option){
+                    case "1" -> {
+                        String time = "DAY";
+                        informationD = db.showOrderNumOfTime(time);
+                        String[] dVIS = {"within_1_" + time, "between_1_and_2_" + time,
+                                "between_2_and_3_" + time, "between_3_and_4_" + time, "between_4_and_5_" + time};
+                        VIS = dVIS.clone();
+                    }
+                    case "2" -> {
+                        String time = "WEEK";
+                        informationD = db.showOrderNumOfTime(time);
+                        String[] dVIS = {"within_1_" + time, "between_1_and_2_" + time,
+                                "between_2_and_3_" + time, "between_3_and_4_" + time, "between_4_and_5_" + time};
+                        VIS = dVIS.clone();
+                    }
+                    case "3" -> {
+                        String time = "MONTH";
+                        informationD = db.showOrderNumOfTime(time);
+                        String[] dVIS = {"within_1_" + time, "between_1_and_2_" + time,
+                                "between_2_and_3_" + time, "between_3_and_4_" + time, "between_4_and_5_" + time};
+                        VIS = dVIS.clone();
+                    }
+                    case "4" -> {
+                        String time = "YEAR";
+                        informationD = db.showOrderNumOfTime(time);
+                        String[] dVIS = {"within_1_" + time, "between_1_and_2_" + time,
+                                "between_2_and_3_" + time, "between_3_and_4_" + time, "between_4_and_5_" + time};
+                        VIS = dVIS.clone();
+                    }
+                    case "5" -> {
+                        informationD = db.showOrderNumOfDayTime();
+                        String[] dVIS = {"morning", "afternoon", "evening", "night"};
+                        VIS = dVIS.clone();
+                    }
+                    default -> {
+                        System.out.println("Input error!");
+                        return;
+                    }
+                }
+                int endPage = (informationD.size() % 10 == 0) ?
+                        (Math.max(1, informationD.size() / 10)) : (informationD.size() / 10 + 1);
+                while(true) {
+                    System.out.println("There are " + endPage + " pages.");
+                    System.out.println("Please enter the page you want to see.(Exit to exit)");
+                    String page = sc.nextLine();
+                    if (page.equals("Exit")) {
+                        return;
+                    }
+                    if (dealMethod.judgePageValue(page) == 0) {
+                        System.out.println("Your input is invalid. Please try again.");
+                        continue;
+                    }
+                    if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                        System.out.println("Invalid page number, please try again.");
+                        continue;
+                    }
+                    int topF = Math.min(Integer.parseInt(page) * 10, informationD.size());
+                    ArrayList<String[]> dataPa = dealMethod.copyArrayList(informationD,
+                            Integer.parseInt(page) * 10 - 10,
+                            topF
+                    );
+                    dealMethod.printStr(VIS, VIS);
+                    for(String[] attribute : dataPa){
+                        dealMethod.printStr(attribute, VIS);
+                    }
+                }
+            }
+        }
+        catch(SQLException e){
+            System.out.println("An error occurred.");
+            e.printStackTrace();
         }
     }
 
@@ -136,11 +224,34 @@ public class Administrator {
         String conditionA = sc.nextLine();
         System.out.println("input B");
         String conditionB = sc.nextLine();
-        dealMethod.printStr(attributeList, attributeList);
         try {
             ArrayList<String[]> allAttribute = db.selectData(table, attributeList, conditionA, conditionB);
-            for(String[] attribute : allAttribute){
-                dealMethod.printStr(attribute, attributeList);
+            int endPage = (allAttribute.size() % 10 == 0) ?
+                    (Math.max(1, allAttribute.size() / 10)) : (allAttribute.size() / 10 + 1);
+            while(true) {
+                System.out.println("There are " + endPage + " pages.");
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if (page.equals("Exit")) {
+                    return;
+                }
+                if (dealMethod.judgePageValue(page) == 0) {
+                    System.out.println("Your input is invalid. Please try again.");
+                    continue;
+                }
+                if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, allAttribute.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(allAttribute,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                dealMethod.printStr(attributeList, attributeList);
+                for(String[] attribute : allAttribute){
+                    dealMethod.printStr(attribute, attributeList);
+                }
             }
         }
         catch (SQLException e){

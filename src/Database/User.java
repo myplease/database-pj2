@@ -85,8 +85,8 @@ public class User {
             String[] VIS = {"skip", "date", "time", "text"};
             System.out.println("I'll show results in Pagination query.");
             int endPage = (message.size() % 10 == 0) ? (Math.max(1, message.size() / 10)) : (message.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true){
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if(page.equals("Exit")){
@@ -155,87 +155,167 @@ public class User {
     public void showCollection(){
         Scanner sc = new Scanner(System.in);
         System.out.println("Which one do you want to see.");
-        System.out.println("1 for merchants. 2 for meals. else for exit");
+        System.out.println("1 for merchants. 2 for meals. 3 for meals in special. else for exit");
         String choose = sc.nextLine();
-        if(choose.equals("1")){
-            try {
-                ArrayList<String[]> likeMerchant = db.userShowLikeMerchant(u_id);
-                String[] VIS = {"skip", "name", "main_dish"};
-                System.out.println("I'll show results in Pagination query.");
-                int endPage = (likeMerchant.size() % 10 == 0) ?
-                        (Math.max(1, likeMerchant.size() / 10)) : (likeMerchant.size() / 10 + 1);
-                System.out.println("There are " + endPage + " pages.");
-                while(true){
-                    System.out.println("Please enter the page you want to see.(Exit to exit)");
-                    String page = sc.nextLine();
-                    if(page.equals("Exit")){
-                        return;
+        switch (choose) {
+            case "1" -> {
+                try {
+                    ArrayList<String[]> likeMerchant = db.userShowLikeMerchant(u_id);
+                    String[] VIS = {"skip", "name", "main_dish"};
+                    System.out.println("I'll show results in Pagination query.");
+                    int endPage = (likeMerchant.size() % 10 == 0) ?
+                            (Math.max(1, likeMerchant.size() / 10)) : (likeMerchant.size() / 10 + 1);
+                    while (true) {
+                        System.out.println("There are " + endPage + " pages.");
+                        System.out.println("Please enter the page you want to see.(Exit to exit)");
+                        String page = sc.nextLine();
+                        if (page.equals("Exit")) {
+                            return;
+                        }
+                        if (dealMethod.judgePageValue(page) == 0) {
+                            System.out.println("Your input is invalid. Please try again.");
+                            continue;
+                        }
+                        if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                            System.out.println("Invalid page number, please try again.");
+                            continue;
+                        }
+                        int topF = Math.min(Integer.parseInt(page) * 10, likeMerchant.size());
+                        ArrayList<String[]> dataPa = dealMethod.copyArrayList(likeMerchant,
+                                Integer.parseInt(page) * 10 - 10,
+                                topF
+                        );
+                        System.out.printf("%-5s%-15s%-15s%n", "raw", "name", "main_dish");
+                        int rawT = 0;
+                        for (String[] args : dataPa) {
+                            System.out.printf("%-5s", rawT++);
+                            dealMethod.printStr(args, VIS);
+                        }
                     }
-                    if(dealMethod.judgePageValue(page) == 0){
-                        System.out.println("Your input is invalid. Please try again.");
-                        continue;
-                    }
-                    if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
-                        System.out.println("Invalid page number, please try again.");
-                        continue;
-                    }
-                    int topF = Math.min(Integer.parseInt(page) * 10, likeMerchant.size());
-                    ArrayList<String[]> dataPa = dealMethod.copyArrayList(likeMerchant,
-                            Integer.parseInt(page) * 10 - 10,
-                            topF
-                    );
-                    System.out.printf("%-5s%-15s%-15s%n", "raw", "name", "main_dish");
-                    int rawT = 0;
-                    for(String[] args : dataPa){
-                        System.out.printf("%-5s", rawT++);
-                        dealMethod.printStr(args, VIS);
-                    }
+                } catch (SQLException e) {
+                    System.out.println("An error occurred.");
+                    e.printStackTrace();
                 }
             }
-            catch(SQLException e){
-                System.out.println("An error occurred.");
-                e.printStackTrace();
-            }
-        }
-        else if(choose.equals("2")){
-            try {
-                ArrayList<String[]> likeDishes = db.userShowLikeDish(u_id);
-                String[] VIS = {"skip", "name", "price", "picture", "sort"};
-                System.out.println("I'll show results in Pagination query.");
-                int endPage = (likeDishes.size() % 10 == 0) ?
-                        (Math.max(1, likeDishes.size() / 10)) : (likeDishes.size() / 10 + 1);
-                System.out.println("There are " + endPage + " pages.");
-                while(true){
-                    System.out.println("Please enter the page you want to see.(Exit to exit)");
-                    String page = sc.nextLine();
-                    if(page.equals("Exit")){
-                        return;
+            case "2" -> {
+                try {
+                    ArrayList<String[]> likeDishes = db.userShowLikeDish(u_id);
+                    String[] VIS = {"skip", "name", "price", "picture", "sort"};
+                    System.out.println("I'll show results in Pagination query.");
+                    int endPage = (likeDishes.size() % 10 == 0) ?
+                            (Math.max(1, likeDishes.size() / 10)) : (likeDishes.size() / 10 + 1);
+                    while (true) {
+                        System.out.println("There are " + endPage + " pages.");
+                        System.out.println("Please enter the page you want to see.(Exit to exit)");
+                        String page = sc.nextLine();
+                        if (page.equals("Exit")) {
+                            return;
+                        }
+                        if (dealMethod.judgePageValue(page) == 0) {
+                            System.out.println("Your input is invalid. Please try again.");
+                            continue;
+                        }
+                        if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                            System.out.println("Invalid page number, please try again.");
+                            continue;
+                        }
+                        int topF = Math.min(Integer.parseInt(page) * 10, likeDishes.size());
+                        ArrayList<String[]> dataPa = dealMethod.copyArrayList(likeDishes,
+                                Integer.parseInt(page) * 10 - 10,
+                                topF
+                        );
+                        System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                        int rawT = 0;
+                        for (String[] args : dataPa) {
+                            System.out.printf("%-5s", rawT);
+                            dealMethod.printStr(args, VIS);
+                        }
                     }
-                    if(dealMethod.judgePageValue(page) == 0){
-                        System.out.println("Your input is invalid. Please try again.");
-                        continue;
-                    }
-                    if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
-                        System.out.println("Invalid page number, please try again.");
-                        continue;
-                    }
-                    int topF = Math.min(Integer.parseInt(page) * 10, likeDishes.size());
-                    ArrayList<String[]> dataPa = dealMethod.copyArrayList(likeDishes,
-                            Integer.parseInt(page) * 10 - 10,
-                            topF
-                    );
-                    System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
-                    int rawT = 0;
-                    for(String[] args : dataPa){
-                        System.out.printf("%-5s", rawT);
-                        dealMethod.printStr(args, VIS);
-                    }
+                } catch (SQLException e) {
+                    System.out.println("An error occurred.");
+                    e.printStackTrace();
                 }
             }
-            catch(SQLException e){
-                System.out.println("An error occurred.");
-                e.printStackTrace();
+            case "3" -> {
+                System.out.println("I'll show you the meals' sale in Pagination query.");
+                System.out.println("1 for online. 2 for offline. else for exit");
+                String ol = sc.nextLine();
+                boolean is_online = false;
+                if (ol.equals("1")) {
+                    is_online = true;
+                } else if (ol.equals("2")) {
+                } else {
+                    return;
+                }
+                try {
+                    ArrayList<String[]> informationM = db.userGetSaleNumOfDishFromLike(u_id, is_online);
+                    int endPage = (informationM.size() % 10 == 0) ?
+                            (Math.max(1, informationM.size() / 10)) : (informationM.size() / 10 + 1);
+                    while (true) {
+                        System.out.println("There are " + endPage + " pages.");
+                        System.out.println("Please enter the page you want to see.(Exit to exit)");
+                        String page = sc.nextLine();
+                        if (page.equals("Exit")) {
+                            return;
+                        }
+                        if (dealMethod.judgePageValue(page) == 0) {
+                            System.out.println("Your input is invalid. Please try again.");
+                            continue;
+                        }
+                        if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                            System.out.println("Invalid page number, please try again.");
+                            continue;
+                        }
+                        int topF = Math.min(Integer.parseInt(page) * 10, informationM.size());
+                        ArrayList<String[]> dataPa = dealMethod.copyArrayList(informationM,
+                                Integer.parseInt(page) * 10 - 10,
+                                topF
+                        );
+                        while (true) {
+                            System.out.println("1 for week. 2 for month. 3 for year.");
+                            String day = sc.nextLine();
+                            if (day.equals("1")) {
+                                String[] VIS = {"skip", "name", "week_sale_num", "skip", "skip"};
+                                System.out.printf("%-5s%-15s%-15s%n",
+                                        "raw", "name", "week_sale_num");
+                                int rawT = 0;
+                                for (String[] args : dataPa) {
+                                    System.out.printf("%-5s", rawT++);
+                                    dealMethod.printStr(args, VIS);
+                                }
+                                break;
+                            } else if (day.equals("2")) {
+                                String[] VIS = {"skip", "name", "skip", "month_sale_num", "skip"};
+                                System.out.printf("%-5s%-15s%-15s%n",
+                                        "raw", "name", "month_sale_num");
+                                int rawT = 0;
+                                for (String[] args : dataPa) {
+                                    System.out.printf("%-5s", rawT++);
+                                    dealMethod.printStr(args, VIS);
+                                }
+                                break;
+                            } else if (day.equals("3")) {
+                                String[] VIS = {"skip", "name", "skip", "skip", "year_sale_num"};
+                                System.out.printf("%-5s%-15s%-15s%n",
+                                        "raw", "name", "year_sale_num");
+                                int rawT = 0;
+                                for (String[] args : dataPa) {
+                                    System.out.printf("%-5s", rawT++);
+                                    dealMethod.printStr(args, VIS);
+                                }
+                                break;
+                            } else {
+                                System.out.println("Please input a valid option.");
+                                continue;
+                            }
+                        }
+                    }
+                } catch (SQLException E) {
+                    System.out.println("An error occurred.");
+                    E.printStackTrace();
+                }
             }
+            default -> {return;}
         }
     }
 
@@ -288,7 +368,7 @@ public class User {
         try {
             ArrayList<String[]> temp = db.getUserInformation(u_id);
             System.out.printf("%-5s%-15s%-10s%-20s%-5s%-10s%n","id", "name", "gender", "student_id", "age", "job");
-            String[] VIS = {"id", "name", "gender", "student_id", "age", "job", "password"};
+            String[] VIS = {"id", "name", "gender", "student_id", "age", "job", "skip"};
             for (String[] strings : temp) {
                 dealMethod.printStr(strings, VIS);
             }
@@ -359,8 +439,8 @@ public class User {
             String[] VIS = {"skip", "name", "main_dish"};
             System.out.println("I'll show results in Pagination query.");
             int endPage = (temp.size() % 10 == 0) ? (Math.max(1, temp.size() / 10)) : (temp.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true){
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if(page.equals("Exit")){
@@ -477,8 +557,8 @@ public class User {
             System.out.println("I'll show results in Pagination query.");
             int endPage = (informationM.size() % 10 == 0) ?
                     (Math.max(1, informationM.size() / 10)) : (informationM.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true) {
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if (page.equals("Exit")) {
@@ -520,8 +600,8 @@ public class User {
             System.out.println("I'll show results in Pagination query.");
             int endPage = (informationM.size() % 10 == 0) ?
                     (Math.max(1, informationM.size() / 10)) : (informationM.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true) {
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if (page.equals("Exit")) {
@@ -566,8 +646,8 @@ public class User {
 
             System.out.println("I'll show results in Pagination query.");
             int endPage = (meals.size() % 10 == 0) ? (Math.max(1, meals.size() / 10)) : (meals.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true) {
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if (page.equals("Exit")) {
@@ -615,8 +695,8 @@ public class User {
         System.out.println("I'll show results in Pagination query.");
         int endPage = (evaluation.size() % 10 == 0) ?
                 (Math.max(1, evaluation.size() / 10)) : (evaluation.size() / 10 + 1);
-        System.out.println("There are " + endPage + " pages.");
         while(true) {
+            System.out.println("There are " + endPage + " pages.");
             System.out.println("Please enter the page you want to see.(Exit to exit)");
             String page = sc.nextLine();
             if (page.equals("Exit")) {
@@ -667,8 +747,8 @@ public class User {
             System.out.println("I'll show results in Pagination query.");
             int endPage = (ordHistory.size() % 10 == 0) ?
                     (Math.max(1, ordHistory.size() / 10)) : (ordHistory.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true){
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if(page.equals("Exit")){
@@ -774,7 +854,7 @@ public class User {
         try {
             ArrayList<String[]> informationMer = db.showDetailedInformationOfMerchant(s_id);
             System.out.printf("%-5s%-15s%-20s%-15s%-15s%-10s%n","id", "name", "address", "phone_number", "main_dish", "score");
-            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "password", "score"};
+            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "skip", "score"};
             for(String[] strings : informationMer) {
                 dealMethod.printStr(strings, VIS);
             }
@@ -797,8 +877,8 @@ public class User {
             System.out.println("I'll show results in Pagination query.");
             int endPage = (idsDealTemp.size() % 10 == 0) ?
                     (Math.max(1, idsDealTemp.size() / 10)) : (idsDealTemp.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true){
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if(page.equals("Exit")){
@@ -838,8 +918,8 @@ public class User {
             ArrayList<String[]> sortTemp = db.showSortOfMerchant(s_id);
             System.out.println("I'll show results in Pagination query.");
             int endPage = (sortTemp.size() % 10 == 0) ? (Math.max(1, sortTemp.size() / 10)) : (sortTemp.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true) {
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if (page.equals("Exit")) {
@@ -889,8 +969,8 @@ public class User {
             System.out.println("I'll show results in Pagination query.");
             int endPage = (mealLIST.size() % 10 == 0) ?
                     (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true){
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if(page.equals("Exit")){
@@ -980,8 +1060,8 @@ public class User {
                             System.out.println("I'll show results in Pagination query.");
                             int mealEndPage = (mealHistory.size() % 10 == 0) ?
                                     (Math.max(1, mealHistory.size() / 10)) : (mealHistory.size() / 10 + 1);
-                            System.out.println("There are " + mealEndPage + " pages.");
                             while(true){
+                                System.out.println("There are " + mealEndPage + " pages.");
                                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                                 String mealPage = sc.nextLine();
                                 if(mealPage.equals("Exit")){

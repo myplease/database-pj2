@@ -49,6 +49,7 @@ public class Merchant {
                     System.out.println("AddMeal: add your meal.");
                     System.out.println("Meal: show your meals.");
                     System.out.println("Order: show your orders.");
+                    System.out.println("ShowFan: show your fans.");
                     break;
                 case "Show":
                     showInf();
@@ -70,10 +71,143 @@ public class Merchant {
                 case "Order":
                     order();
                     break;
+                case "ShowFan":
+                    showFan();
+                    break;
                 default:
                     System.out.println("Input error. Please try again.");
                     break;
             }
+        }
+    }
+
+    public void showFan(){
+        Scanner sc = new Scanner(System.in);
+        try {
+            ArrayList<String[]> informationM = db.showFansOfMerchant(s_id);
+            String[] VIS = {"skip", "name", "order_num"};
+            System.out.println("Here's your fans.");
+            System.out.println("I'll show results in Pagination query.");
+            int endPage = (informationM.size() % 10 == 0) ?
+                    (Math.max(1, informationM.size() / 10)) : (informationM.size() / 10 + 1);
+            while(true) {
+                System.out.println("There are " + endPage + " pages.");
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if (page.equals("Exit")) {
+                    return;
+                }
+                if(dealMethod.judgePageValue(page) == 0){
+                    System.out.println("Your input is invalid. Please try again.");
+                    continue;
+                }
+                if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, informationM.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(informationM,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                System.out.printf("%-5s%-15s%-15s%n",
+                        "raw", "name", "order_num");
+                int rawT = 0;
+                for (String[] args : dataPa) {
+                    System.out.printf("%-5s", rawT++);
+                    dealMethod.printStr(args, VIS);
+                }
+                System.out.println("You can choose a order.");
+                System.out.println("1 for query ahead. 2 for choose a fan. Else for exit");
+                String choice = sc.nextLine();
+                if(choice.equals("1")){
+                    continue;
+                }
+                else if(choice.equals("2")){
+                    System.out.println("You can see the detailed order of the fan.");
+                    System.out.println("Please input the raw to choose.");
+                    String raw = "";
+                    while(true){
+                        raw = sc.nextLine();
+                        if(raw.equals("Exit")){
+                            return;
+                        }
+                        if(dealMethod.judgeRawValue(raw) == 0){
+                            System.out.println("Your input is invalid. Please try again.");
+                            continue;
+                        }
+                        if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
+                                || Integer.parseInt(raw) < 0){
+                            System.out.println("Invalid page number, please try again.");
+                            continue;
+                        }
+                        else{
+                            break;
+                        }
+                    }
+                    String idUser = dataPa.get(Integer.parseInt(raw))[0];
+                    System.out.println("Please choose the time.");
+                    System.out.println("Week for weeks. Month for months. Year for years.");
+                    String time = "";
+                    while(true){
+                        time = sc.nextLine();
+                        if(time.equals("Year")){break;}
+                        else if(time.equals("Month")){break;}
+                        else if(time.equals("Year")){break;}
+                        else{
+                            System.out.println("Invalid input, please try again.");
+                            continue;
+                        }
+                    }
+                    try {
+                        ArrayList<String[]> detailedI = db.showOrderDishOfUserInMerchant(s_id, Integer.parseInt(idUser), time);
+                        String[] dVIS = {"skip", "dish_name", "dish_num"};
+                        System.out.println("I'll show results in Pagination query.");
+                        int dEndPage = (detailedI.size() % 10 == 0) ?
+                                (Math.max(1, detailedI.size() / 10)) : (detailedI.size() / 10 + 1);
+                        while(true) {
+                            System.out.println("There are " + dEndPage + " pages.");
+                            System.out.println("Please enter the page you want to see.(Exit to exit)");
+                            String dPage = sc.nextLine();
+                            if (dPage.equals("Exit")) {
+                                return;
+                            }
+                            if (dealMethod.judgePageValue(dPage) == 0) {
+                                System.out.println("Your input is invalid. Please try again.");
+                                continue;
+                            }
+                            if (Integer.parseInt(dPage) > dEndPage || Integer.parseInt(dPage) <= 0) {
+                                System.out.println("Invalid page number, please try again.");
+                                continue;
+                            }
+                            int dTopF = Math.min(Integer.parseInt(dPage) * 10, detailedI.size());
+                            ArrayList<String[]> dDataPa = dealMethod.copyArrayList(detailedI,
+                                    Integer.parseInt(dPage) * 10 - 10,
+                                    dTopF
+                            );
+                            System.out.printf("%-5s%-15s%-10s%n",
+                                    "raw", "dish_name", "dish_num");
+                            int dRawT = 0;
+                            for (String[] args : dDataPa) {
+                                System.out.printf("%-5s", dRawT++);
+                                dealMethod.printStr(args, dVIS);
+                            }
+                            break;
+                        }
+                    }
+                    catch(SQLException e){
+                        System.out.println("An error occurred.");
+                        e.printStackTrace();
+                    }
+                }
+                else{
+                    return;
+                }
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -85,8 +219,8 @@ public class Merchant {
             System.out.println("I'll show results in Pagination query.");
             int endPage = (informationM.size() % 10 == 0) ?
                     (Math.max(1, informationM.size() / 10)) : (informationM.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true) {
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if (page.equals("Exit")) {
@@ -165,8 +299,8 @@ public class Merchant {
             System.out.println("I'll show results in Pagination query.");
             int endPage = (mealLIST.size() % 10 == 0) ?
                     (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
-            System.out.println("There are " + endPage + " pages.");
             while(true){
+                System.out.println("There are " + endPage + " pages.");
                 System.out.println("Please enter the page you want to see.(Exit to exit)");
                 String page = sc.nextLine();
                 if(page.equals("Exit")){
@@ -283,7 +417,7 @@ public class Merchant {
         try {
             ArrayList<String[]> merchantInf = db.showDetailedInformationOfMerchant(s_id);
             System.out.printf("%-5s%-15s%-20s%-15s%-15s%-10s%n", "id", "name", "address", "phone_number", "main_dish", "score");
-            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "password", "score"};
+            String[] VIS = {"id", "name", "address", "phone_number", "main_dish", "skip", "score"};
             for (String[] strings : merchantInf) {
                 dealMethod.printStr(strings, VIS);
             }
@@ -353,8 +487,8 @@ public class Merchant {
                 System.out.println("I'll show results in Pagination query.");
                 int endPage = (mealLIST.size() % 10 == 0) ?
                         (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
-                System.out.println("There are " + endPage + " pages.");
                 while(true){
+                    System.out.println("There are " + endPage + " pages.");
                     System.out.println("Please enter the page you want to see.(Exit to exit)");
                     String page = sc.nextLine();
                     if(page.equals("Exit")){

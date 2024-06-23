@@ -44,7 +44,36 @@ public class dealMethod {
                 case "like_num" -> System.out.printf("%-15s", s);
                 case "dish_name" -> System.out.printf("%-15s", s);
                 case "user_name" -> System.out.printf("%-15s", s);
-                case "password" -> {}
+                case "week_sale_num" -> System.out.printf("%-15s", s);
+                case "month_sale_num" -> System.out.printf("%-15s", s);
+                case "year_sale_num" -> System.out.printf("%-15s", s);
+                case "order_num" -> System.out.printf("%-15s", s);
+                case "dish_num" -> System.out.printf("%-10s", s);
+                case "password" -> System.out.printf("%-20s", s);
+                case "within_1_DAY" -> System.out.printf("%-25s", s);
+                case "between_1_and_2_DAY" -> System.out.printf("%-25s", s);
+                case "between_2_and_3_DAY" -> System.out.printf("%-25s", s);
+                case "between_3_and_4_DAY" -> System.out.printf("%-25s", s);
+                case "between_4_and_5_DAY" -> System.out.printf("%-25s", s);
+                case "within_1_WEEK" -> System.out.printf("%-25s", s);
+                case "between_1_and_2_WEEK" -> System.out.printf("%-25s", s);
+                case "between_2_and_3_WEEK" -> System.out.printf("%-25s", s);
+                case "between_3_and_4_WEEK" -> System.out.printf("%-25s", s);
+                case "between_4_and_5_WEEK" -> System.out.printf("%-25s", s);
+                case "within_1_MONTH" -> System.out.printf("%-25s", s);
+                case "between_1_and_2_MONTH" -> System.out.printf("%-25s", s);
+                case "between_2_and_3_MONTH" -> System.out.printf("%-25s", s);
+                case "between_3_and_4_MONTH" -> System.out.printf("%-25s", s);
+                case "between_4_and_5_MONTH" -> System.out.printf("%-25s", s);
+                case "within_1_YEAR" -> System.out.printf("%-25s", s);
+                case "between_1_and_2_YEAR" -> System.out.printf("%-25s", s);
+                case "between_2_and_3_YEAR" -> System.out.printf("%-25s", s);
+                case "between_3_and_4_YEAR" -> System.out.printf("%-25s", s);
+                case "between_4_and_5_YEAR" -> System.out.printf("%-25s", s);
+                case "morning" -> System.out.printf("%-15s", s);
+                case "afternoon" -> System.out.printf("%-15s", s);
+                case "evening" -> System.out.printf("%-15s", s);
+                case "night" -> System.out.printf("%-15s", s);
                 case "skip" -> {}
                 default -> System.out.printf("%-5s", s);
             }
