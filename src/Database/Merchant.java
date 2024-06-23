@@ -50,6 +50,7 @@ public class Merchant {
                     System.out.println("Meal: show your meals.");
                     System.out.println("Order: show your orders.");
                     System.out.println("ShowFan: show your fans.");
+                    System.out.println("Sort: show your sorts.");
                     break;
                 case "Show":
                     showInf();
@@ -74,10 +75,52 @@ public class Merchant {
                 case "ShowFan":
                     showFan();
                     break;
+                case "Sort":
+                    sort();
+                    break;
                 default:
                     System.out.println("Input error. Please try again.");
                     break;
             }
+        }
+    }
+
+    public void sort(){
+        Scanner sc = new Scanner(System.in);
+        try {
+            String[] VIS = {"sort"};
+            ArrayList<String[]> mealLIST = db.showSortOfMerchant(s_id);
+            System.out.println("Here's the sorts.");
+            System.out.println("I'll show results in Pagination query.");
+            int endPage = (mealLIST.size() % 10 == 0) ?
+                    (Math.max(1, mealLIST.size() / 10)) : (mealLIST.size() / 10 + 1);
+            while(true){
+                System.out.println("There are " + endPage + " pages.");
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if(page.equals("Exit")){
+                    return;
+                }
+                if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, mealLIST.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(mealLIST,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                System.out.printf("%-5s%-10s%n", "raw", "sort");
+                int rawT = 0;
+                for(String[] args : dataPa){
+                    System.out.printf("%-5s", rawT++);
+                    dealMethod.printStr(args, VIS);
+                }
+            }
+        }
+        catch (SQLException e){
+            System.out.println("An error occurred!");
+            e.printStackTrace();
         }
     }
 
@@ -315,7 +358,7 @@ public class Merchant {
                         Integer.parseInt(page) * 10 - 10,
                         topF
                 );
-                System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                System.out.printf("%-5s%-15s%-10s%-15s%-10s%n", "raw", "name", "price", "picture", "sort");
                 int rawT = 0;
                 for(String[] args : dataPa){
                     System.out.printf("%-5s", rawT++);
@@ -351,7 +394,7 @@ public class Merchant {
                     }
                     String[] VisD = {"skip", "skip", "name", "price", "picture", "sort", "nutrition", "allergen",
                             "score", "total_score", "score_count"};
-                    System.out.printf("%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
+                    System.out.printf("%-15s%-10s%-15s%-10s%-15s%-15s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
                             "nutrition", "allergen", "score", "total_score", "score_count");
                     String idMeal = dataPa.get(Integer.parseInt(raw))[0];
                     ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(idMeal));
@@ -430,7 +473,7 @@ public class Merchant {
     public void changeInformation(){
         Scanner sc = new Scanner(System.in);
         System.out.println("Please choose the attribute to modify.");
-        System.out.println("name, address, phone or mealMain (Enter exit to exit)");
+        System.out.println("name, address or mealMain (Enter exit to exit)");
         try {
             while(true){
                 int flag = 0;
@@ -447,12 +490,6 @@ public class Merchant {
                         System.out.println("Please enter the new address.");
                         String address = sc.nextLine();
                         db.changeData("merchant", new String[]{Integer.toString(s_id)}, "address", address);
-                        break;
-                    case "phone":
-                        flag = 1;
-                        System.out.println("Please enter the new phone.");
-                        String phone = sc.nextLine();
-                        db.changeData("merchant", new String[]{Integer.toString(s_id)}, "phone_number", phone);
                         break;
                     case "mealMain":
                         flag = 1;
@@ -507,7 +544,7 @@ public class Merchant {
                             Integer.parseInt(page) * 10 - 10,
                             topF
                     );
-                    System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                    System.out.printf("%-5s%-15s%-10s%-15s%-10s%n", "raw", "name", "price", "picture", "sort");
                     int rawT = 0;
                     for(String[] args : dataPa){
                         System.out.printf("%-5s", rawT++);
@@ -542,7 +579,7 @@ public class Merchant {
                         }
                         String[] VisD = {"skip", "skip", "name", "price", "picture", "sort", "nutrition", "allergen",
                                 "score", "total_score", "score_count"};
-                        System.out.printf("%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
+                        System.out.printf("%-15s%-10s%-15s%-10s%-15s%-15s%-10s%-20s%-20s%n", "name", "price", "picture", "sort",
                                 "nutrition", "allergen", "score", "total_score", "score_count");
                         String idMeal = dataPa.get(Integer.parseInt(raw))[0];
                         ArrayList<String[]> idsDealTemp = db.showDetailedInformationOfDish(Integer.parseInt(idMeal));
@@ -574,7 +611,7 @@ public class Merchant {
                                     String picture = sc.nextLine();
                                     db.changeData("dish", new String[]{idMeal}, "picture", picture);
                                     return;
-                                case "Classification":
+                                case "Sort":
                                     System.out.println("Please enter the new classification.");
                                     String classification = sc.nextLine();
                                     db.changeData("dish", new String[]{idMeal}, "sort", classification);

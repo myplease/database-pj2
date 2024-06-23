@@ -20,10 +20,11 @@ public class dealMethod {
                 case "phone_number" -> System.out.printf("%-15s", s);
                 case "main_dish" -> System.out.printf("%-15s", s);
                 case "sid" -> System.out.printf("%-5s", s);
-                case "price", "sort" -> System.out.printf("%-10s", s);
-                case "picture" -> System.out.printf("%-10s", s);
-                case "nutrition" -> System.out.printf("%-10s", s);
-                case "allergen" -> System.out.printf("%-10s", s);
+                case "price" -> System.out.printf("%-10s", s);
+                case "sort" -> System.out.printf("%-10s", s);
+                case "picture" -> System.out.printf("%-15s", s);
+                case "nutrition" -> System.out.printf("%-15s", s);
+                case "allergen" -> System.out.printf("%-15s", s);
                 case "score" -> System.out.printf("%-10s", s);
                 case "total_score" -> System.out.printf("%-20s", s);
                 case "score_count" -> System.out.printf("%-20s", s);

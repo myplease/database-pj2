@@ -342,7 +342,7 @@ public class User {
                                 Integer.parseInt(page) * 10 - 10,
                                 topF
                         );
-                        System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                        System.out.printf("%-5s%-15s%-10s%-15s%-10s%n", "raw", "name", "price", "picture", "sort");
                         int rawT = 0;
                         for (String[] args : dataPa) {
                             System.out.printf("%-5s", rawT);
@@ -498,7 +498,7 @@ public class User {
 
     public void modify(){
         System.out.println("Please choose the attribute to modify.");
-        System.out.println("name, gender or studentID (Enter exit to exit)");
+        System.out.println("name, gender, age or job(Enter exit to exit)");
         Scanner sc = new Scanner(System.in);
         try {
             while(true){
@@ -517,11 +517,21 @@ public class User {
                         String gender = sc.nextLine();
                         db.changeData("user", new String[]{Integer.toString(u_id)}, "gender", gender);
                         break;
-                    case "studentID":
+                    case "age":
                         flag = 1;
-                        System.out.println("Please enter the new studentID.");
-                        String studentID = sc.nextLine();
-                        db.changeData("user", new String[]{Integer.toString(u_id)}, "student_id", studentID);
+                        System.out.println("Please enter the new age.");
+                        String age = sc.nextLine();
+                        if(dealMethod.judgePageValue(age) == 0){
+                            System.out.println("Your input is invalid.");
+                            return;
+                        }
+                        db.changeData("user", new String[]{Integer.toString(u_id)}, "age", age);
+                        break;
+                    case "job":
+                        flag = 1;
+                        System.out.println("Please enter the new job.");
+                        String job = sc.nextLine();
+                        db.changeData("user", new String[]{Integer.toString(u_id)}, "job", job);
                         break;
                     case "exit":
                         return;
@@ -738,7 +748,7 @@ public class User {
                         Integer.parseInt(page) * 10 - 10,
                         topF
                 );
-                System.out.printf("%-5s%-15s%-10s%-10s%-10s%-10s%-15s%-15s%-15s%n",
+                System.out.printf("%-5s%-15s%-10s%-15s%-10s%-10s%-15s%-15s%-15s%n",
                         "raw", "name", "price", "picture", "sort",
                         "score", "online_num", "offline_num", "like_num");
                 int rawT = 0;
@@ -784,7 +794,7 @@ public class User {
                         Integer.parseInt(page) * 10 - 10,
                         topF
                 );
-                System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                System.out.printf("%-5s%-15s%-10s%-15s%-10s%n", "raw", "name", "price", "picture", "sort");
                 int rawT = 0;
                 for (String[] args : dataPa) {
                     System.out.printf("%-5s", rawT++);
@@ -1015,7 +1025,7 @@ public class User {
                         Integer.parseInt(page) * 10 - 10,
                         topF
                 );
-                System.out.printf("%-5s%-15s%-10s%-10s%-10s%-10s%-10s%-10s%-20s%-20s%n","raw", "name", "price", "picture", "sort",
+                System.out.printf("%-5s%-15s%-10s%-15s%-10s%-15s%-15s%-10s%-20s%-20s%n","raw", "name", "price", "picture", "sort",
                         "nutrition", "allergen", "score", "total_score", "score_count");
                 int rawT = 0;
                 for(String[] args : dataPa){
@@ -1107,7 +1117,7 @@ public class User {
                         Integer.parseInt(page) * 10 - 10,
                         topF
                 );
-                System.out.printf("%-5s%-15s%-10s%-10s%-10s%n", "raw", "name", "price", "picture", "sort");
+                System.out.printf("%-5s%-15s%-10s%-15s%-10s%n", "raw", "name", "price", "picture", "sort");
                 int rawT = 0;
                 for(String[] args : dataPa){
                     System.out.printf("%-5s", rawT++);
