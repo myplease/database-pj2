@@ -515,8 +515,9 @@ public class Database {
     public boolean userOrderDish(int uid,int sid,int[] fid,int[] num,boolean is_online) throws SQLException {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        String[] orders_argv = {date,time,Integer.toString(uid),Integer.toString(sid),Integer.toString(is_online?1:0),"no_text",Integer.toString(0)};
-        addData("orders",orders_argv);
+        String[] entry = {"date","time","uid","sid","is_online","state"};
+        String[] orders_argv = {date,time,Integer.toString(uid),Integer.toString(sid),Integer.toString(is_online?1:0),Integer.toString(0)};
+        addDataByEntry("orders",entry,orders_argv);
         String line = "SELECT max(id) as id FROM orders";
         PreparedStatement statement = connection.prepareStatement(line);
         ResultSet resultSet = statement.executeQuery();
