@@ -50,6 +50,8 @@ public class User {
                     System.out.println("Order: view your orders' history.");
                     System.out.println("ShowCollection: show your collections.");
                     System.out.println("UnreadMessage: show the message you dont read.");
+                    System.out.println("ExceedNum: show all dishes exceed a number.");
+                    System.out.println("ChangedMerchant: show the merchant to change the price often.");
                     break;
                 case "View":
                     view();
@@ -71,10 +73,126 @@ public class User {
                 case "UnreadMessage":
                     unreadMessage();
                     break;
+                case "ExceedNum":
+                    exceedNum();
+                    break;
+                case "ChangedMerchant":
+                    changeMerchant();
+                    break;
                 default:
                     System.out.println("You input a invalid option.");
                     break;
             }
+        }
+    }
+
+    public void changeMerchant(){
+        Scanner sc = new Scanner(System.in);
+        String num = "";
+        while(true){
+            System.out.println("Please enter your number.(Exit for exit)");
+            num = sc.nextLine();
+            if(num.equals("Exit")){
+                return;
+            }
+            if(dealMethod.judgePageValue(num) == 0){
+                System.out.println("Your input is invalid. Please try again.");
+                continue;
+            }
+            break;
+        }
+        try {
+            ArrayList<String[]> informationD = db.showMostOftenChangePriceMerchant(Integer.parseInt(num));
+            String[] VIS = {"skip", "merchant_name", "change_price_count"};
+            System.out.println("I'll show results in Pagination query exceeding your number.");
+            int endPage = (informationD.size() % 10 == 0) ?
+                    (Math.max(1, informationD.size() / 10)) : (informationD.size() / 10 + 1);
+            while(true) {
+                System.out.println("There are " + endPage + " pages.");
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if (page.equals("Exit")) {
+                    return;
+                }
+                if (dealMethod.judgePageValue(page) == 0) {
+                    System.out.println("Your input is invalid. Please try again.");
+                    continue;
+                }
+                if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, informationD.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(informationD,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                System.out.printf("%-5s%-20s%-20s%n", "raw", "merchant_name", "change_price_count");
+                int rawT = 0;
+                for (String[] args : dataPa) {
+                    System.out.printf("%-5s", rawT++);
+                    dealMethod.printStr(args, VIS);
+                }
+            }
+        }
+        catch (SQLException e){
+            System.out.println("An error occurred while reading your message");
+            e.printStackTrace();
+        }
+    }
+
+    public void exceedNum(){
+        Scanner sc = new Scanner(System.in);
+        String num = "";
+        while(true){
+            System.out.println("Please enter your number.(Exit for exit)");
+            num = sc.nextLine();
+            if(num.equals("Exit")){
+                return;
+            }
+            if(dealMethod.judgePageValue(num) == 0){
+                System.out.println("Your input is invalid. Please try again.");
+                continue;
+            }
+            break;
+        }
+        try {
+            ArrayList<String[]> informationD = db.showDishSaleNumOver(Integer.parseInt(num));
+            String[] VIS = {"skip", "skip", "dish_name", "sale_num"};
+            System.out.println("I'll show results in Pagination query exceeding your number.");
+            int endPage = (informationD.size() % 10 == 0) ?
+                    (Math.max(1, informationD.size() / 10)) : (informationD.size() / 10 + 1);
+            while(true) {
+                System.out.println("There are " + endPage + " pages.");
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if (page.equals("Exit")) {
+                    return;
+                }
+                if (dealMethod.judgePageValue(page) == 0) {
+                    System.out.println("Your input is invalid. Please try again.");
+                    continue;
+                }
+                if (Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0) {
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, informationD.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(informationD,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                System.out.printf("%-5s%-15s%-10s%n", "raw", "dish_name", "sale_num");
+                int rawT = 0;
+                for (String[] args : dataPa) {
+                    System.out.printf("%-5s", rawT++);
+                    dealMethod.printStr(args, VIS);
+                }
+            }
+        }
+        catch (SQLException e){
+            System.out.println("An error occurred while reading your message");
+            e.printStackTrace();
         }
     }
 

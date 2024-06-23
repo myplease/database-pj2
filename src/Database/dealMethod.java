@@ -20,9 +20,8 @@ public class dealMethod {
                 case "phone_number" -> System.out.printf("%-15s", s);
                 case "main_dish" -> System.out.printf("%-15s", s);
                 case "sid" -> System.out.printf("%-5s", s);
-                case "price" -> System.out.printf("%-10s", s);
+                case "price", "sort" -> System.out.printf("%-10s", s);
                 case "picture" -> System.out.printf("%-10s", s);
-                case "sort" -> System.out.printf("%-10s", s);
                 case "nutrition" -> System.out.printf("%-10s", s);
                 case "allergen" -> System.out.printf("%-10s", s);
                 case "score" -> System.out.printf("%-10s", s);
@@ -84,6 +83,8 @@ public class dealMethod {
                 case "4_count" -> System.out.printf("%-10s", s);
                 case "5_count" -> System.out.printf("%-10s", s);
                 case "total_count" -> System.out.printf("%-20s", s);
+                case "sale_num" -> System.out.printf("%-10s", s);
+                case "change_price_count" -> System.out.printf("%-20s", s);
                 case "skip" -> {}
                 default -> System.out.printf("%-5s", s);
             }
