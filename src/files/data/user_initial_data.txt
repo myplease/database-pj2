@@ -1,2 +1,10 @@
-user_name0 male 22302010069 20 student password0
-user_name1 male 22302010070 20 student password0
+user_name0 male student_number0 20 student password0
+user_name1 male student_number1 20 student password1
+user_name2 male student_number2 20 student password2
+user_name3 male student_number3 20 student password3
+user_name4 male student_number4 20 student password4
+user_name5 male student_number5 20 student password5
+user_name6 male student_number6 20 student password6
+user_name7 male student_number7 20 student password7
+user_name8 male student_number8 20 student password8
+user_name9 male student_number9 20 student password9

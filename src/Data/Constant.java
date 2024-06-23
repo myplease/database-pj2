@@ -16,12 +16,13 @@ public class Constant {
     public static int INF_ORDER_NUM_OF_FAN = 5;
 
 
-    public static int initialMerchantNumber = 100;
-    public static int initialUserNumber = 100;
+    public static int initialMerchantNumber = 10;
+    public static int initialUserNumber = 10;
     public static int initialDishNumberEachMerchant = 10;
     public static int initialSortNumber = 3;
     public static int initialOrderNumberEachUser = 10;
-    public static int initialLikeDishNumberEachUser = 100;
-    public static int initialLikeMerchantNumberEachUser = 100;
-
+    public static int initialLikeDishNumberEachUser = 10;
+    public static int initialLikeMerchantNumberEachUser = 10;
+    public static int initialDishNumberEachOrder = 3;
+    public static int initialMessageEachUser = 1;
 }
