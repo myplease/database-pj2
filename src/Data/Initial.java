@@ -15,7 +15,7 @@ public class Initial {
         for (int i = 0; i < Constant.initialMerchantNumber; i++) {
             line = "merchant_name" + i +
                     " address" + i +
-                    " 00000000000" +
+                    " phone_number" + i +
                     " main_dish" + i +
                     " password" + i ;
             if(i != Constant.initialMerchantNumber - 1) line += "\n";
@@ -69,9 +69,9 @@ public class Initial {
                 int J = j+1;
                 String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-                line = date + time +
+                line = date + " " + time +
                         " " + I +
-                        " " + ((i*j % Constant.initialMerchantNumber)+1) +
+                        " " + getMerchantIdByUid(i*j + j + 1) +
                         " 0" +
                         " 0";
                 if (i != Constant.initialUserNumber - 1 || j != Constant.initialOrderNumberEachUser - 1) line += "\n";
@@ -85,11 +85,11 @@ public class Initial {
         String line;
         BufferedWriter writer = new BufferedWriter(new FileWriter("src/files/data/like_dish_initial_data.txt"));
         for (int i = 0; i < Constant.initialUserNumber; i++) {
-            for (int j = 0; j < Constant.initialLikeDishNumberEachUser; j++) {
+            for (int j = 0; j < Constant.initialLikeDishNumberEachUser && j < Constant.initialDishNumberEachMerchant * Constant.initialMerchantNumber; j++) {
                 int I = i+1;
                 int J = j+1;
                 line = "" + I +
-                        " " + ((i*j % Constant.initialDishNumberEachMerchant*Constant.initialMerchantNumber)+1);
+                        " " + (j + 1);
                 if (i != Constant.initialUserNumber - 1 || j != Constant.initialLikeDishNumberEachUser - 1) line += "\n";
                 writer.write(line);
             }
@@ -98,15 +98,13 @@ public class Initial {
     }
     public static void initialLikeMerchant() throws IOException {
         String line;
-        BufferedWriter writer = new BufferedWriter(new FileWriter("src/files/data/merchant_initial_data.txt"));
-        line = "1 1\n" +
-                "2 1";
+        BufferedWriter writer = new BufferedWriter(new FileWriter("src/files/data/like_merchant_initial_data.txt"));
         for (int i = 0; i < Constant.initialUserNumber; i++) {
-            for (int j = 0; j < Constant.initialLikeMerchantNumberEachUser; j++) {
+            for (int j = 0; j < Constant.initialLikeMerchantNumberEachUser && j < Constant.initialMerchantNumber; j++) {
                 int I = i+1;
                 int J = j+1;
                 line = "" + I +
-                        " " + ((i*j % Constant.initialMerchantNumber)+1);
+                        " " + (j+1);
                 if (i != Constant.initialUserNumber - 1 || j != Constant.initialLikeMerchantNumberEachUser - 1) line += "\n";
                 writer.write(line);
             }
@@ -116,17 +114,38 @@ public class Initial {
     public static void initialOrderDish() throws IOException {
         String line;
         BufferedWriter writer = new BufferedWriter(new FileWriter("src/files/data/order_dish_initial_data.txt"));
-        line = "1 1 1 0\n" +
-                "2 1 10 0\n" +
-                "3 2 1 0";
-        writer.write(line);
+        for (int i = 0; i < Constant.initialUserNumber*Constant.initialOrderNumberEachUser; i++) {
+            for (int j = 0; j < Constant.initialDishNumberEachOrder; j++) {
+                int bid = i+1;
+                int fid = getDishIdBySid(getMerchantIdByUid(bid),j);
+                line = "" + bid +
+                        " " + fid + " 1" + " 0";
+                if (i != Constant.initialUserNumber*Constant.initialOrderNumberEachUser - 1 || j != Constant.initialDishNumberEachOrder - 1) line += "\n";
+                writer.write(line);
+            }
+        }
         writer.close();
     }
     public static void initialMessage() throws IOException {
         String line;
         BufferedWriter writer = new BufferedWriter(new FileWriter("src/files/data/message_initial_data.txt"));
-        line = "1 0 2024-06-17 03:42:50 message_text0";
-        writer.write(line);
+        for (int i = 0; i < Constant.initialUserNumber; i++) {
+            for (int j = 0; j < Constant.initialMessageEachUser; j++) {
+                int uid = i + 1;
+                String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+                line = "" + uid + " 0" + " " + date + " " + time + " WELCOME!";
+                if (i != Constant.initialUserNumber - 1 || j != Constant.initialMessageEachUser - 1) line += "\n";
+                writer.write(line);
+            }
+        }
         writer.close();
+    }
+    private static int getMerchantIdByUid(int bid){
+        return bid % Constant.initialMerchantNumber + 1;
+    }
+    private static int getDishIdBySid(int sid,int index){
+        index %= Constant.initialDishNumberEachMerchant;
+        return (sid - 1) * Constant.initialDishNumberEachMerchant + index + 1;
     }
 }

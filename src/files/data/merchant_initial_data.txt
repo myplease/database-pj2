@@ -1,1 +1,10 @@
-merchant_name0 address0 00000000000 main_dish0 password0
+merchant_name0 address0 phone_number0 main_dish0 password0
+merchant_name1 address1 phone_number1 main_dish1 password1
+merchant_name2 address2 phone_number2 main_dish2 password2
+merchant_name3 address3 phone_number3 main_dish3 password3
+merchant_name4 address4 phone_number4 main_dish4 password4
+merchant_name5 address5 phone_number5 main_dish5 password5
+merchant_name6 address6 phone_number6 main_dish6 password6
+merchant_name7 address7 phone_number7 main_dish7 password7
+merchant_name8 address8 phone_number8 main_dish8 password8
+merchant_name9 address9 phone_number9 main_dish9 password9
