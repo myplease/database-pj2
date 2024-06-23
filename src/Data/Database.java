@@ -753,4 +753,20 @@ public class Database {
         String[] schema = {"no_score_count","1_count","2_count","3_count","4_count","5_count","total_count"};
         return resultSetToList(resultSet,schema);
     }
+    public ArrayList<String[]> showDishSaleNumOver(int num) throws SQLException {
+        String line = "SELECT dish.id as fid,sid,dish.name as dish_name,sum(order_dish.number) as sale_num FROM dish JOIN order_dish ON dish.id = order_dish.fid GROUP BY fid,sid,dish_name HAVING sale_num >= ? ORDER BY sale_num DESC";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,num);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"fid","sid","dish_name","sale_num"};
+        return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> showMostOftenChangePriceMerchant(int reduce_num) throws SQLException {
+        String line =  "SELECT merchant.id as sid,merchant.name as merchant_name,count(*) as change_price_count FROM merchant JOIN price_history WHERE DATEDIFF(CURDATE(), date) <= 30 GROUP BY sid,merchant_name HAVING change_price_count > ? ORDER BY change_price_count DESC";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,reduce_num);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"sid","merchant_name","change_price_count"};
+        return resultSetToList(resultSet,schema);
+    }
 }
