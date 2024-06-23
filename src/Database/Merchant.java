@@ -429,6 +429,10 @@ public class Merchant {
                                 case "Price":
                                     System.out.println("Please enter the new price.");
                                     String price = sc.nextLine();
+                                    if(dealMethod.judgePageValue(price) == 0){
+                                        System.out.println("Your input is invalid. Please try again.");
+                                        continue;
+                                    }
                                     db.changeData("dish", new String[]{idMeal}, "price", price);
                                     return;
                                 case "Picture":
@@ -476,8 +480,16 @@ public class Merchant {
         System.out.println("Please input the attribute.");
         System.out.println("Please input the name.");
         String name = sc.nextLine();
-        System.out.println("Please input the price");
-        String price = sc.nextLine();
+        String price = "";
+        while(true){
+            System.out.println("Please input the price");
+            price = sc.nextLine();
+            if(dealMethod.judgePageValue(price) == 0){
+                System.out.println("Your input is invalid. Please try again.");
+                continue;
+            }
+            break;
+        }
         System.out.println("Please input the picture");
         String picture = sc.nextLine();
         System.out.println("Please input the sort");
