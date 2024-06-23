@@ -74,6 +74,16 @@ public class dealMethod {
                 case "afternoon" -> System.out.printf("%-15s", s);
                 case "evening" -> System.out.printf("%-15s", s);
                 case "night" -> System.out.printf("%-15s", s);
+                case "merchant_name" -> System.out.printf("%-20s", s);
+                case "comment_count" -> System.out.printf("%-20s", s);
+                case "order_count" -> System.out.printf("%-20s", s);
+                case "no_score_count" -> System.out.printf("%-20s", s);
+                case "1_count" -> System.out.printf("%-10s", s);
+                case "2_count" -> System.out.printf("%-10s", s);
+                case "3_count" -> System.out.printf("%-10s", s);
+                case "4_count" -> System.out.printf("%-10s", s);
+                case "5_count" -> System.out.printf("%-10s", s);
+                case "total_count" -> System.out.printf("%-20s", s);
                 case "skip" -> {}
                 default -> System.out.printf("%-5s", s);
             }
