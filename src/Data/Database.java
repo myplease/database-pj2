@@ -762,7 +762,7 @@ public class Database {
         return resultSetToList(resultSet,schema);
     }
     public ArrayList<String[]> showMostOftenChangePriceMerchant(int change_num) throws SQLException {
-        String line =  "SELECT merchant.id as sid,merchant.name as merchant_name,count(*) as change_price_count FROM merchant JOIN price_history WHERE DATEDIFF(CURDATE(), date) <= 30 GROUP BY sid,merchant_name HAVING change_price_count > ? ORDER BY change_price_count DESC";
+        String line =  "SELECT merchant.id as sid,merchant.name as merchant_name,count(*) as change_price_count FROM merchant JOIN dish ON dish.sid = merchant.id JOIN price_history ON dish.id = price_history.fid WHERE DATEDIFF(CURDATE(), date) <= 30 GROUP BY sid,merchant_name HAVING change_price_count > ? ORDER BY change_price_count DESC";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,change_num);
         ResultSet resultSet = statement.executeQuery();
