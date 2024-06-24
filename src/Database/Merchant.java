@@ -190,13 +190,13 @@ public class Merchant {
                     }
                     String idUser = dataPa.get(Integer.parseInt(raw))[0];
                     System.out.println("Please choose the time.");
-                    System.out.println("Week for weeks. Month for months. Year for years.");
+                    System.out.println("WEEK for weeks. MONTH for months. YEAR for years.");
                     String time = "";
                     while(true){
                         time = sc.nextLine();
-                        if(time.equals("Year")){break;}
-                        else if(time.equals("Month")){break;}
-                        else if(time.equals("Year")){break;}
+                        if(time.equals("WEEK")){break;}
+                        else if(time.equals("MONTH")){break;}
+                        else if(time.equals("YEAR")){break;}
                         else{
                             System.out.println("Invalid input, please try again.");
                             continue;

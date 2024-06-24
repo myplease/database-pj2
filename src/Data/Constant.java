@@ -13,7 +13,7 @@ public class Constant {
     public static List<String> like_dishSchema = Arrays.asList("uid","fid");
     public static List<String> messageSchema = Arrays.asList("id","uid","is_read","date","time","text");
     public static List<String> price_historySchema = Arrays.asList("fid","date","time","price");
-    public static int INF_ORDER_NUM_OF_FAN = 5;
+    public static int INF_ORDER_NUM_OF_FAN = 3;
 
 
     public static int initialMerchantNumber = 10;

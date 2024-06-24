@@ -6,8 +6,12 @@ import Data.Database;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        Database db = new Database("root", "lw456456");
         Scanner sc = new Scanner(System.in);
+        System.out.println("Please input the database's username.");
+        String username = sc.nextLine();
+        System.out.println("Please input the database's password.");
+        String password = sc.nextLine();
+        Database db = new Database(username, password);
         while(true){
             System.out.println("Please enter the operator!");
             System.out.println("1 for administrator. 2 for merchant. 3 for users.(EXIT for exit)");
