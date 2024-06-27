@@ -374,7 +374,6 @@ public class Administrator {
         }
         catch(SQLException e){
             System.out.println("An error occurred.");
-            e.printStackTrace();
         }
     }
 
@@ -408,11 +407,24 @@ public class Administrator {
         String table = sc.nextLine();
         System.out.println("Please input the id.");
         String id = sc.nextLine();
-        try {
-            db.deleteData(table, new String[]{id});
+        String id2 = "";
+        if(table.equals("order_dish") || table.equals("like_dish") || table.equals("like_merchant")){
+            System.out.println("Please input the another id.");
+            id2 = sc.nextLine();
+            try {
+                db.deleteData(table, new String[]{id, id2});
+            }
+            catch(Exception e){
+                System.out.println("Delete error!");
+            }
         }
-        catch(Exception e){
-            System.out.println("Delete error!");
+        else{
+            try {
+                db.deleteData(table, new String[]{id});
+            }
+            catch(Exception e){
+                System.out.println("Delete error!");
+            }
         }
     }
 
@@ -420,17 +432,30 @@ public class Administrator {
         Scanner sc = new Scanner(System.in);
         System.out.println("Which table do you want to change?");
         String table = sc.nextLine();
-        System.out.println("Please input the id.");
-        String id = sc.nextLine();
         System.out.println("Which attribute do you want to change");
         String attribute = sc.nextLine();
         System.out.println("What's the new value.");
         String value = sc.nextLine();
-        try {
-            db.changeData(table, new String[]{id}, attribute, value);
+        System.out.println("Please input the id.");
+        String id = sc.nextLine();
+        String id2 = "";
+        if(table.equals("order_dish") || table.equals("like_dish") || table.equals("like_merchant")){
+            System.out.println("Please input the another id.");
+            id2 = sc.nextLine();
+            try {
+                db.changeData(table, new String[]{id, id2}, attribute, value);
+            }
+            catch(Exception e){
+                System.out.println("Change error!");
+            }
         }
-        catch(Exception e){
-            System.out.println("Change error!");
+        else{
+            try {
+                db.changeData(table, new String[]{id}, attribute, value);
+            }
+            catch(Exception e){
+                System.out.println("Change error!");
+            }
         }
     }
 
@@ -439,7 +464,7 @@ public class Administrator {
         System.out.println("Which table do you want to query?");
         String table = sc.nextLine();
         System.out.println("Please input the attribute.(stop stands end)");
-        String[] attributeList = new String[105];
+        ArrayList<String> attributeList = new ArrayList<>();
         int cmp = 0;
         while(true){
             System.out.println("Input" + cmp + ": ");
@@ -447,7 +472,7 @@ public class Administrator {
             if(attribute.equals("stop")){
                 break;
             }
-            attributeList[cmp] = attribute;
+            attributeList.add(attribute);
             cmp++;
         }
         System.out.println("Please input the condition.(A = B)");
@@ -456,7 +481,8 @@ public class Administrator {
         System.out.println("input B");
         String conditionB = sc.nextLine();
         try {
-            ArrayList<String[]> allAttribute = db.selectData(table, attributeList, conditionA, conditionB);
+            ArrayList<String[]> allAttribute = db.selectData(table, attributeList.toArray(new String[0]),
+                    conditionA, conditionB);
             int endPage = (allAttribute.size() % 10 == 0) ?
                     (Math.max(1, allAttribute.size() / 10)) : (allAttribute.size() / 10 + 1);
             while(true) {
@@ -479,9 +505,9 @@ public class Administrator {
                         Integer.parseInt(page) * 10 - 10,
                         topF
                 );
-                dealMethod.printStr(attributeList, attributeList);
+                dealMethod.printStr(attributeList.toArray(new String[0]), attributeList.toArray(new String[0]));
                 for(String[] attribute : dataPa){
-                    dealMethod.printStr(attribute, attributeList);
+                    dealMethod.printStr(attribute, attributeList.toArray(new String[0]));
                 }
             }
         }

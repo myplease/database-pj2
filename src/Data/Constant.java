@@ -25,4 +25,6 @@ public class Constant {
     public static int initialLikeMerchantNumberEachUser = 10;
     public static int initialDishNumberEachOrder = 3;
     public static int initialMessageEachUser = 1;
+
+    public static boolean isDebug = true;
 }

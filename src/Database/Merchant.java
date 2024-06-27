@@ -120,7 +120,6 @@ public class Merchant {
         }
         catch (SQLException e){
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -240,7 +239,6 @@ public class Merchant {
                     }
                     catch(SQLException e){
                         System.out.println("An error occurred.");
-                        e.printStackTrace();
                     }
                 }
                 else{
@@ -250,7 +248,6 @@ public class Merchant {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -328,7 +325,6 @@ public class Merchant {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -409,7 +405,6 @@ public class Merchant {
         }
         catch (SQLException e){
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -449,6 +444,7 @@ public class Merchant {
                 }
                 catch(SQLException e){
                     System.out.println("Register failed.");
+                    return 1;
                 }
                 return 0;
             default:
@@ -642,7 +638,6 @@ public class Merchant {
         }
         catch (SQLException e){
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 

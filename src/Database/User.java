@@ -52,6 +52,7 @@ public class User {
                     System.out.println("UnreadMessage: show the message you dont read.");
                     System.out.println("ExceedNum: show all dishes exceed a number.");
                     System.out.println("ChangedMerchant: show the merchant to change the price often.");
+                    System.out.println("OrderUncompleted: show your orders uncompleted.");
                     break;
                 case "View":
                     view();
@@ -79,10 +80,97 @@ public class User {
                 case "ChangedMerchant":
                     changeMerchant();
                     break;
+                case "OrderUncompleted":
+                    orderUncompleted();
+                    break;
                 default:
                     System.out.println("You input a invalid option.");
                     break;
             }
+        }
+    }
+
+    public void orderUncompleted(){
+        Scanner sc = new Scanner(System.in);
+        try {
+            ArrayList<String[]> orderUncompleted = db.userShowUncompletedOrder(u_id);
+            String[] VIS = {"skip", "skip", "date", "time", "is_online", "state", "name"};
+            System.out.println("I'll show results in Pagination query.");
+            int endPage = (orderUncompleted.size() % 10 == 0) ?
+                    (Math.max(1, orderUncompleted.size() / 10)) : (orderUncompleted.size() / 10 + 1);
+            while(true){
+                System.out.println("There are " + endPage + " pages.");
+                System.out.println("Please enter the page you want to see.(Exit to exit)");
+                String page = sc.nextLine();
+                if(page.equals("Exit")){
+                    return;
+                }
+                if(dealMethod.judgePageValue(page) == 0){
+                    System.out.println("Your input is invalid. Please try again.");
+                    continue;
+                }
+                if(Integer.parseInt(page) > endPage || Integer.parseInt(page) <= 0){
+                    System.out.println("Invalid page number, please try again.");
+                    continue;
+                }
+                int topF = Math.min(Integer.parseInt(page) * 10, orderUncompleted.size());
+                ArrayList<String[]> dataPa = dealMethod.copyArrayList(orderUncompleted,
+                        Integer.parseInt(page) * 10 - 10,
+                        topF
+                );
+                System.out.printf("%-5s%-15s%-15s%-10s%-10s%-15s%n",
+                        "raw", "date","time","is_online","state","name");
+                int rawT = 0;
+                for(String[] args : dataPa){
+                    System.out.printf("%-5s", rawT++);
+                    dealMethod.printStr(args, VIS);
+                }
+                System.out.println("You can choose a order.");
+                System.out.println("1 for query ahead. 2 for choose a order. Else will exit.");
+                String read = sc.nextLine();
+                if(read.equals("1")){
+                    continue;
+                }
+                else if(read.equals("2")){
+                    while(true){
+                        System.out.println("Please input the raw.(from 0)");
+                        String raw = sc.nextLine();
+                        if(raw.equals("Exit")){
+                            return;
+                        }
+                        if(dealMethod.judgeRawValue(raw) == 0){
+                            System.out.println("Your input is invalid. Please try again.");
+                            continue;
+                        }
+                        if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10 || Integer.parseInt(raw) < 0){
+                            System.out.println("Invalid page number, please try again.");
+                            continue;
+                        }
+                        if(!dataPa.get(Integer.parseInt(raw))[5].equals("0")){
+                            System.out.println("You cant choose the order.");
+                            continue;
+                        }
+                        System.out.println("You can confirm or delete a order.");
+                        System.out.println("1 for confirm. 2 for delete. else for exit.");
+                        String choice = sc.nextLine();
+                        String b_id = dataPa.get(Integer.parseInt(raw))[0];
+                        if(choice.equals("1")){
+                            db.userConfirmOrder(Integer.parseInt(b_id));
+                        }
+                        else if(choice.equals("2")){
+                            db.userDeleteOrder(Integer.parseInt(b_id));
+                        }
+                        break;
+                    }
+                    break;
+                }
+                else{
+                    return;
+                }
+            }
+        }
+        catch (SQLException e){
+            System.out.println("An error occurred while reading your message");
         }
     }
 
@@ -137,7 +225,6 @@ public class User {
         }
         catch (SQLException e){
             System.out.println("An error occurred while reading your message");
-            e.printStackTrace();
         }
     }
 
@@ -192,7 +279,6 @@ public class User {
         }
         catch (SQLException e){
             System.out.println("An error occurred while reading your message");
-            e.printStackTrace();
         }
     }
 
@@ -239,6 +325,9 @@ public class User {
                     while(true){
                         System.out.println("Please input the raw.(from 0)");
                         String raw = sc.nextLine();
+                        if(raw.equals("Exit")){
+                            return;
+                        }
                         if(dealMethod.judgeRawValue(raw) == 0){
                             System.out.println("Your input is invalid. Please try again.");
                             continue;
@@ -253,7 +342,6 @@ public class User {
                         }
                         catch (SQLException e){
                             System.out.println("An error occurred while reading your message.");
-                            e.printStackTrace();
                         }
                         break;
                     }
@@ -265,8 +353,7 @@ public class User {
             }
         }
         catch (SQLException e){
-            System.out.println("An error occurred while reading your message");
-            e.printStackTrace();
+            System.out.println("An error occurred while reading your order");
         }
     }
 
@@ -312,7 +399,6 @@ public class User {
                     }
                 } catch (SQLException e) {
                     System.out.println("An error occurred.");
-                    e.printStackTrace();
                 }
             }
             case "2" -> {
@@ -351,7 +437,6 @@ public class User {
                     }
                 } catch (SQLException e) {
                     System.out.println("An error occurred.");
-                    e.printStackTrace();
                 }
             }
             case "3" -> {
@@ -430,7 +515,6 @@ public class User {
                     }
                 } catch (SQLException E) {
                     System.out.println("An error occurred.");
-                    E.printStackTrace();
                 }
             }
             default -> {return;}
@@ -475,6 +559,7 @@ public class User {
                 }
                 catch(SQLException e){
                     System.out.println("Register failed.");
+                    return 1;
                 }
                 return 0;
             default:
@@ -492,7 +577,6 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -545,7 +629,6 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -603,6 +686,9 @@ public class User {
                     while(true){
                         System.out.println("Please input the raw.(from 0)");
                         String raw = sc.nextLine();
+                        if(raw.equals("Exit")){
+                            return;
+                        }
                         if(dealMethod.judgeRawValue(raw) == 0){
                             System.out.println("Your input is invalid. Please try again.");
                             continue;
@@ -623,7 +709,6 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
         while(true){
             System.out.println("Please enter your operate.(Enter Help to get all operation)");
@@ -715,7 +800,6 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -760,7 +844,6 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -804,7 +887,6 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -816,7 +898,6 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
 
         String[] VIS = {"skip", "date", "time", "comment"};
@@ -915,6 +996,9 @@ public class User {
                         while(true){
                             System.out.println("Which one do you want to evaluate?(input the raw)");
                             String raw = sc.nextLine();
+                            if(raw.equals("Exit")){
+                                return;
+                            }
                             if(dealMethod.judgeRawValue(raw) == 0){
                                 System.out.println("Your input is invalid. Please try again.");
                                 continue;
@@ -922,6 +1006,10 @@ public class User {
                             if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
                                     || Integer.parseInt(raw) < 0){
                                 System.out.println("Invalid page number, please try again.");
+                                continue;
+                            }
+                            if(!dataPa.get(Integer.parseInt(raw))[5].equals("2")){
+                                System.out.println("You cant evaluate this order. Please try again.");
                                 continue;
                             }
                             b_id = dataPa.get(Integer.parseInt(raw))[0];
@@ -935,8 +1023,15 @@ public class User {
                         while(true){
                             System.out.println("Which meal do you want to evaluate?(input the raw)");
                             String raw = sc.nextLine();
+                            if(raw.equals("Exit")){
+                                return;
+                            }
                             if(dealMethod.judgeRawValue(raw) == 0){
                                 System.out.println("Your input is invalid. Please try again.");
+                                continue;
+                            }
+                            if(!dataPa.get(Integer.parseInt(raw))[5].equals("2")){
+                                System.out.println("You cant evaluate this meal. Please try again.");
                                 continue;
                             }
                             if(Integer.parseInt(raw) >= topF - Integer.parseInt(page) * 10 + 10
@@ -955,10 +1050,14 @@ public class User {
                                         System.out.println("The score is wrong. Please input again.");
                                     }
                                     else{
-                                        db.userPutScoreOnOrderDish(
+                                        boolean sta = db.userPutScoreOnOrderDish(
                                                 Integer.parseInt(dataPa.get(Integer.parseInt(raw))[0]),
                                                 Integer.parseInt(dataPa.get(Integer.parseInt(raw))[1]),
                                                 Integer.parseInt(score));
+                                        if(!sta){
+                                            System.out.println("You put score on a meal twice. Please try again.");
+                                            System.out.println("Your score is invalid.");
+                                        }
                                         break;
                                     }
                                 }
@@ -974,7 +1073,6 @@ public class User {
         }
         catch (SQLException e){
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -988,7 +1086,6 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -1036,7 +1133,6 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -1075,7 +1171,6 @@ public class User {
             }
         } catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 
@@ -1225,7 +1320,6 @@ public class User {
                     }
                     catch (SQLException e) {
                         System.out.println("An error occurred!");
-                        e.printStackTrace();
                     }
 
                     System.out.println("Please enter the number of the meal.(number > 0)");
@@ -1267,7 +1361,6 @@ public class User {
         }
         catch (SQLException e){
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
         System.out.println("Please choose the online or not.(1 for yes, else for no)");
         String choose = sc.nextLine();
@@ -1289,7 +1382,6 @@ public class User {
         }
         catch (SQLException e) {
             System.out.println("An error occurred!");
-            e.printStackTrace();
         }
     }
 }
