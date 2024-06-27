@@ -384,7 +384,7 @@ public class Database {
         return changeData("dish",argv,"sort",sort);
     }
     public ArrayList<String[]> merchantGetOrder(int sid) throws SQLException {
-        String line = "SELECT bid,fid,date,time,is_online,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ? AND state = 1";
+        String line = "SELECT bid,fid,date,time,is_online,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ? AND state = 1 ORDER BY date,time DESC";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         ResultSet resultSet = statement.executeQuery();
@@ -598,7 +598,7 @@ public class Database {
     public ArrayList<String[]> getMostBuyUserOfDishFromMerchant(int sid) throws SQLException {
         String line = "WITH temp AS(SELECT fid,uid,SUM(order_dish.number) as count FROM order_dish JOIN orders ON order_dish.bid = orders.id WHERE orders.sid = ? GROUP BY fid,orders.uid)" +
                 ",temp2 AS(SELECT fid,uid,count FROM temp WHERE count = (SELECT MAX(count) FROM temp WHERE fid = temp.fid)) ";
-        line = line + "SELECT dish.id as fid,dish.name as dish_name,user.name as user_name FROM temp2 JOIN dish JOIN user WHERE dish.id = temp2.fid AND user.id = temp2.uid";
+        line = line + "SELECT DISTINCT dish.id as fid,dish.name as dish_name,user.name as user_name FROM temp2 JOIN dish JOIN user WHERE dish.id = temp2.fid AND user.id = temp2.uid";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         ResultSet resultSet = statement.executeQuery();
@@ -635,7 +635,7 @@ public class Database {
     }
     public ArrayList<String[]> showFansOfMerchant(int sid) throws SQLException {
         String line = "WITH fans AS (SELECT uid,count(id) as num FROM orders WHERE orders.sid = ? GROUP BY uid having count(id) >= ?)"+
-                " SELECT id as uid,name,num as order_num FROM user JOIN fans ON user.id = fans.uid";
+                " SELECT DISTINCT id as uid,name,num as order_num FROM user JOIN fans ON user.id = fans.uid";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         statement.setInt(2,Constant.INF_ORDER_NUM_OF_FAN);
