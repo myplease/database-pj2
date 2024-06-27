@@ -384,7 +384,7 @@ public class Database {
         return changeData("dish",argv,"sort",sort);
     }
     public ArrayList<String[]> merchantGetOrder(int sid) throws SQLException {
-        String line = "SELECT bid,fid,date,time,is_online,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ? AND state = 0";
+        String line = "SELECT bid,fid,date,time,is_online,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.sid = ? AND state = 1";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         ResultSet resultSet = statement.executeQuery();
@@ -393,7 +393,7 @@ public class Database {
     }
     public boolean merchantOrderReady(int bid) throws SQLException {
         String[] argv = {Integer.toString(bid)};
-        return changeData("orders",argv,"state",Integer.toString(1));
+        return changeData("orders",argv,"state",Integer.toString(2));
     }
     public ArrayList<String[]> getUserInformation(int id) throws SQLException {
         String line = "SELECT * FROM user WHERE id = ?";
@@ -497,12 +497,28 @@ public class Database {
         return changeData("message",argv,"is_read","1");
     }
     public ArrayList<String[]> userShowOrder(int uid) throws SQLException {
-        String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ?";
+        String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ? ORDER BY date,time DESC";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,uid);
         ResultSet resultSet = statement.executeQuery();
         String[] schema = {"bid","fid","date","time","is_online","state","name"};
         return resultSetToList(resultSet,schema);
+    }
+    public ArrayList<String[]> userShowUncompletedOrder(int uid) throws SQLException {
+        String line = "SELECT bid,fid,date,time,is_online,state,name FROM orders JOIN order_dish JOIN dish ON orders.id = order_dish.bid AND order_dish.fid = dish.id WHERE orders.uid = ? AND not orders.state = 2 ORDER BY date,time DESC";
+        PreparedStatement statement = connection.prepareStatement(line);
+        statement.setInt(1,uid);
+        ResultSet resultSet = statement.executeQuery();
+        String[] schema = {"bid","fid","date","time","is_online","state","name"};
+        return resultSetToList(resultSet,schema);
+    }
+    public boolean userConfirmOrder(int bid) throws SQLException {
+        String[] argv = {Integer.toString(bid)};
+        return changeData("orders",argv,"state",Integer.toString(1));
+    }
+    public boolean userDeleteOrder(int bid) throws SQLException {
+        String[] argv = {Integer.toString(bid)};
+        return deleteData("orders",argv);
     }
     public boolean userCommentOnOrder(int bid,String comment) throws SQLException {
         String[] argv = {Integer.toString(bid)};
@@ -537,7 +553,7 @@ public class Database {
         return true;
     }
     public ArrayList<String[]> userShowPriceHistory(int fid) throws SQLException {
-        String line = "SELECT date,time,price FROM price_history WHERE price_history.fid = ?";
+        String line = "SELECT date,time,price FROM price_history WHERE price_history.fid = ? ORDER BY date,time DESC";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,fid);
         ResultSet resultSet = statement.executeQuery();
@@ -641,7 +657,7 @@ public class Database {
         return resultSetToList(resultSet,schema);
     }
     public ArrayList<String[]> showCommentOnMerchant(int sid) throws SQLException {
-        String line = "SELECT id as bid,date,time,comment FROM orders WHERE orders.sid = ? AND orders.comment IS NOT null ORDER BY date,time";
+        String line = "SELECT id as bid,date,time,comment FROM orders WHERE orders.sid = ? AND orders.comment IS NOT null ORDER BY date,time DESC";
         PreparedStatement statement = connection.prepareStatement(line);
         statement.setInt(1,sid);
         ResultSet resultSet = statement.executeQuery();
